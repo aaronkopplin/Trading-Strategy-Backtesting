@@ -1,7 +1,8 @@
 import PyQt5.QtWidgets
-from PyQt5 import QtGui, QtWidgets
+from PyQt5 import QtGui, QtWidgets, QtCore
 from PyQt5.QtWidgets import QApplication, QMainWindow
 from Graph import Graph
+from InfoPanel import InfoPanel
 
 
 class Window(QMainWindow):
@@ -10,6 +11,8 @@ class Window(QMainWindow):
         self.title = "Trading Bot"
         self.top = 150
         self.left = 150
+        self.setFixedWidth(1600)
+        self.setFixedHeight(1000)
         self.panel = QtWidgets.QWidget()
         self.setContentsMargins(0, 0, 0, 0)
         self.panel.setContentsMargins(0, 0, 0, 0)
@@ -23,14 +26,15 @@ class Window(QMainWindow):
         self.panel_layout.addWidget(self.graph, 0, 0)
 
         # info panel
-        self.info_panel = QtWidgets.QWidget()
-        self.info_panel.setFixedSize(50, 50)
-        self.info_panel.setStyleSheet("background-color: yellow")
+        self.info_panel = InfoPanel()
         self.panel_layout.addWidget(self.info_panel, 0, 1)
 
         self.panel.setLayout(self.panel_layout)
         self.setCentralWidget(self.panel)
         self.InitWindow()
+
+    def resizeEvent(self, a0: QtGui.QResizeEvent) -> None:
+        self.info_panel.setMaximumWidth(int(self.width() / 3))
 
     def InitWindow(self):
         self.setWindowTitle(self.title)
