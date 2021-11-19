@@ -18,10 +18,18 @@ class Graph(QtWidgets.QWidget):
         self.candles = candles
         self.candle_bodies = []
         self.setMouseTracking(True)
+        self.draw_cursor = True
         self.mouse_x = 0
         self.mouse_y = 0
         self.global_min = 0
         self.global_max = 0
+
+    def enterEvent(self, a0: QtCore.QEvent) -> None:
+        self.draw_cursor = True
+
+    def leaveEvent(self, a0: QtCore.QEvent) -> None:
+        self.draw_cursor = False
+        self.update()
 
     def mouseMoveEvent(self, a0: QtGui.QMouseEvent) -> None:
         self.mouse_x = a0.x()
@@ -107,18 +115,19 @@ class Graph(QtWidgets.QWidget):
                 if self.candles[i - 1].lower_band != 0 and self.candles[i].lower_band != 0:
                     painter.drawLine(QLine(int(x1), y1, int(x2), y2))
 
-        #  draw price, datetime next to cursor
-        date = self.find_candle(self.mouse_x).date_time
-        painter.setPen(QPen(Qt.black))
-        painter.setFont(QFont("arial"))
-        price = self.convert_y_to_price(self.mouse_y)
-        painter.drawText(QPoint(int(self.mouse_x) + 5, int(self.mouse_y) - 5),
-                         "(" + str('${:,.2f}'.format(round(price, 2))) + ", " + str(date) + ")")
+        if self.draw_cursor:
+            #  draw price, datetime next to cursor
+            date = self.find_candle(self.mouse_x).date_time
+            painter.setPen(QPen(Qt.black))
+            painter.setFont(QFont("arial"))
+            price = self.convert_y_to_price(self.mouse_y)
+            painter.drawText(QPoint(int(self.mouse_x) + 5, int(self.mouse_y) - 5),
+                             "(" + str('${:,.2f}'.format(round(price, 2))) + ", " + str(date) + ")")
 
-        # draw cursor dashed lines
-        painter.setPen(QPen(Qt.black, 1, Qt.DashLine))
-        painter.drawLine(0, self.mouse_y, self.width(), self.mouse_y)
-        painter.drawLine(self.mouse_x, 0, self.mouse_x, self.height())
+            # draw cursor dashed lines
+            painter.setPen(QPen(Qt.black, 1, Qt.DashLine))
+            painter.drawLine(0, self.mouse_y, self.width(), self.mouse_y)
+            painter.drawLine(self.mouse_x, 0, self.mouse_x, self.height())
 
     def calc_y2(self, candle: Candle, global_max: float, global_min: float) -> float:
         percent_of_screen = (candle.low - global_min) / (global_max - global_min)
