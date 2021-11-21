@@ -11,3 +11,10 @@ class Candle:
         self.sma = 0
         self.upper_band = 0
         self.lower_band = 0
+        self.x = 0
+        self.y = 0
+        self.w = 0
+        self.h = 0
+
+    def green(self):
+        return self.open < self.close
