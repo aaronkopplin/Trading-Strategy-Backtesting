@@ -1,7 +1,6 @@
 import yfinance
 import csv
 from Candle import Candle
-from Account import Account
 from Bollinger import *
 
 #

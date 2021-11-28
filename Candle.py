@@ -15,6 +15,8 @@ class Candle:
         self.y = 0
         self.w = 0
         self.h = 0
+        self.bought: bool = False
+        self.sold: bool = False
 
     def green(self):
         return self.open < self.close
