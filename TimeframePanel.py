@@ -6,26 +6,37 @@ from datetime import date, timedelta
 from datetime import datetime
 from Chart import Chart
 from Strategy import Account, Trade
+import StyleInfo
 
 
 class TimeframePanel(QtWidgets.QWidget):
     def __init__(self, chart: Chart):
         super().__init__()
         self.chart = chart
+
         self.layout = QHBoxLayout()
         self.layout.setContentsMargins(0, 0, 0, 0)
         self.setLayout(self.layout)
-        # self.setStyleSheet(" border-style: solid; border-width: 5px; ")
+
+        self.panel = QWidget()
+        self.layout.addWidget(self.panel)
+        self.panel.setStyleSheet(f"background-color: {StyleInfo.panel_color}; "
+                                 f"color: white;"
+                                 f"font-size: {StyleInfo.font_size}pt;")
+
+        self.panel_layout = QHBoxLayout()
+        self.panel_layout.setContentsMargins(0, 0, 0, 0)
+        self.panel.setLayout(self.panel_layout)
 
         # begin time frame
         self.begin_timeframe = QDateTimeEdit()
         self.begin_timeframe.setDateTime(QDateTime(date.today() - timedelta(7)))
-        self.layout.addWidget(self.begin_timeframe)
+        self.panel_layout.addWidget(self.begin_timeframe)
 
         # end time frame
         self.end_timeframe = QDateTimeEdit()
         self.end_timeframe.setDateTime(QDateTime(date.today()))
-        self.layout.addWidget(self.end_timeframe)
+        self.panel_layout.addWidget(self.end_timeframe)
 
         #  candle selector
         self.candle_selector = QComboBox()
@@ -38,14 +49,14 @@ class TimeframePanel(QtWidgets.QWidget):
         self.candle_selector.addItem("1d")
         self.candle_selector.addItem("5d")
         self.candle_selector.addItem("1wk")
-        self.layout.addWidget(self.candle_selector)
+        self.panel_layout.addWidget(self.candle_selector)
 
         self.load_parameters()
 
         # submit_button button
         self.submit_button = QPushButton("submit")
         self.submit_button.clicked.connect(self.run_query)
-        self.layout.addWidget(self.submit_button)
+        self.panel_layout.addWidget(self.submit_button)
 
     def run_query(self):
         self.chart.run_query(self.begin_timeframe.dateTime(),

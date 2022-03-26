@@ -19,7 +19,6 @@ class Window(QMainWindow):
         self.panel.setContentsMargins(0, 0, 0, 0)
         self.panel_layout = QtWidgets.QGridLayout()
         self.panel_layout.setContentsMargins(0, 0, 0, 0)
-        # self.setStyleSheet("background-color: white;")
 
         # graph
         self.graph = Graph(candles)

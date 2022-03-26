@@ -271,7 +271,7 @@ class Chart(QtWidgets.QWidget):
             if can is not None:
                 can_date = can.date_time
                 painter.setPen(QPen(Qt.white))
-                painter.setFont(QFont("arial", 12))
+                painter.setFont(QFont("arial", StyleInfo.font_size))
                 price = f"Open: ${'{:,.2f}'.format(can.open)}, " \
                         f"High: ${'{:,.2f}'.format(can.high)}, " \
                         f"Low: ${'{:,.2f}'.format(can.low)}, " \
