@@ -14,6 +14,7 @@ import yfinance
 from PullData import read_candles
 from datetime import datetime
 from Strategy import Account, Trade
+import StyleInfo
 
 
 class Chart(QtWidgets.QWidget):
@@ -166,6 +167,20 @@ class Chart(QtWidgets.QWidget):
         self.candle_bodies.clear()
         painter.setRenderHint(QPainter.HighQualityAntialiasing)
 
+        #  draw background
+        painter.setPen(QPen(StyleInfo.background_color, StyleInfo.pen_width, Qt.SolidLine))
+        painter.setBrush(QBrush(StyleInfo.background_color, Qt.SolidPattern))
+        painter.drawRect(0, 0, self.width(), self.height())
+
+        #  draw horizontal gridlines
+        painter.setPen(QPen(StyleInfo.gridline_color, StyleInfo.pen_width, Qt.SolidLine))
+        for i in range(1, StyleInfo.num_horizontal_gridlines):
+            x1 = 0
+            x2 = self.width()
+            y1 = i * int(self.height() / StyleInfo.num_horizontal_gridlines)
+            y2 = y1
+            painter.drawLine(x1, y1, x2, y2)
+
         # draw candle bodies
         self.candle_width = self.width() / self.num_candles_on_screen()
         for i in range(self.num_candles_on_screen()):
@@ -173,37 +188,46 @@ class Chart(QtWidgets.QWidget):
             prev_candle: Candle = self.candles[i + self.first_candle - 1]
 
             # draw wicks
-            painter.setPen(QPen(Qt.black))
-            x1 = (i * self.candle_width) + (self.candle_width / 2)
-            y1 = self.calc_y1(curr_candle)
-            x2 = x1
-            y2 = self.calc_y2(curr_candle)
+            x1 = int((i * self.candle_width) + (self.candle_width / 2))
+            y1 = int(self.calc_y1(curr_candle))
+            x2 = int(x1)
+            y2 = int(self.calc_y2(curr_candle))
+            if curr_candle.close >= curr_candle.open:
+                painter.setPen(QPen(StyleInfo.green_candle, StyleInfo.pen_width, Qt.SolidLine))
+            else:
+                painter.setPen(QPen(StyleInfo.red_candle, StyleInfo.pen_width, Qt.SolidLine))
             painter.drawLine(x1, y1, x2, y2)
 
-            # dimensions for candle bodies
-            x = i * self.candle_width
-            y = self.calc_y(curr_candle, self.global_max, self.global_min)
-            w = self.candle_width
-            h = self.calc_candle_height(curr_candle, self.global_max, self.global_min)
+            # draw grid lines
+            if i % StyleInfo.num_candles_per_gridline == 0:
+                painter.setPen(QPen(StyleInfo.gridline_color, StyleInfo.pen_width, Qt.SolidLine))
+                painter.drawLine(x1, 0, x1, self.height())
 
+            # dimensions for candle bodies
+            x = int(i * self.candle_width)
+            y = int(self.calc_y(curr_candle, self.global_max, self.global_min))
+            w = int(self.candle_width)
+            h = int(self.calc_candle_height(curr_candle, self.global_max, self.global_min))
+
+            # if strategy has run and candle is bought or sold
             if curr_candle.bought:
-                color = QColor(204, 255, 179, 128)
-                painter.setPen(QPen(color, 1, Qt.SolidLine))
+                color = QColor(204, 255, 179, 75)
+                painter.setPen(QPen(color, StyleInfo.pen_width, Qt.SolidLine))
                 painter.setBrush(QBrush(color, Qt.SolidPattern))
                 painter.drawRect(x, 0, w, self.height())
             if curr_candle.sold:
-                color = QColor(255, 179, 179, 128)
-                painter.setPen(QPen(color, 1, Qt.SolidLine))
+                color = QColor(255, 179, 179, 75)
+                painter.setPen(QPen(color, StyleInfo.pen_width, Qt.SolidLine))
                 painter.setBrush(QBrush(color, Qt.SolidPattern))
                 painter.drawRect(x, 0, w, self.height())
 
             # draw candle bodies
             if curr_candle.close >= curr_candle.open:
-                painter.setPen(QPen(Qt.darkGreen, 1, Qt.SolidLine))
-                painter.setBrush(QBrush(Qt.green, Qt.SolidPattern))
+                painter.setPen(QPen(StyleInfo.green_candle, StyleInfo.pen_width, Qt.SolidLine))
+                painter.setBrush(QBrush(StyleInfo.background_color, Qt.SolidPattern))
             else:
-                painter.setPen(QPen(Qt.darkRed, 1, Qt.SolidLine))
-                painter.setBrush(QBrush(Qt.red, Qt.SolidPattern))
+                painter.setPen(QPen(StyleInfo.red_candle, StyleInfo.pen_width, Qt.SolidLine))
+                painter.setBrush(QBrush(StyleInfo.red_candle, Qt.SolidPattern))
 
             painter.drawRect(x, y, w, h)
             curr_candle.x = x
@@ -215,7 +239,7 @@ class Chart(QtWidgets.QWidget):
             # draw bollinger bands
             if i > 1:
                 # upper band
-                painter.setPen(QPen(Qt.blue))
+                painter.setPen(QPen(StyleInfo.bollinger_band_color, StyleInfo.pen_width, Qt.SolidLine))
                 x1 = ((i-1) * self.candle_width) + (self.candle_width / 2)
                 y1 = self.convert_price_to_y(prev_candle.upper_band)
                 x2 = (i * self.candle_width) + (self.candle_width / 2)
@@ -224,7 +248,7 @@ class Chart(QtWidgets.QWidget):
                     painter.drawLine(QLine(int(x1), y1, int(x2), y2))
 
                 # simple moving average
-                painter.setPen(QPen(Qt.darkMagenta))
+                painter.setPen(QPen(Qt.white, StyleInfo.pen_width, Qt.SolidLine))
                 x1 = ((i - 1) * self.candle_width) + (self.candle_width / 2)
                 y1 = self.convert_price_to_y(prev_candle.sma)
                 x2 = (i * self.candle_width) + (self.candle_width / 2)
@@ -233,7 +257,7 @@ class Chart(QtWidgets.QWidget):
                     painter.drawLine(QLine(int(x1), y1, int(x2), y2))
 
                 # lower band
-                painter.setPen(QPen(Qt.darkCyan))
+                painter.setPen(QPen(StyleInfo.bollinger_band_color, StyleInfo.pen_width, Qt.SolidLine))
                 x1 = ((i - 1) * self.candle_width) + (self.candle_width / 2)
                 y1 = self.convert_price_to_y(prev_candle.lower_band)
                 x2 = (i * self.candle_width) + (self.candle_width / 2)
@@ -246,23 +270,30 @@ class Chart(QtWidgets.QWidget):
             can = self.find_candle(self.mouse_x)
             if can is not None:
                 can_date = can.date_time
-                painter.setPen(QPen(Qt.black))
-                painter.setFont(QFont("arial"))
-                price = f"Open: ${'{:,.2f}'.format(can.open)}\n" \
-                        f"High: ${'{:,.2f}'.format(can.high)}\n" \
-                        f"Low: ${'{:,.2f}'.format(can.low)}\n" \
-                        f"Close: ${'{:,.2f}'.format(can.close)}"
+                painter.setPen(QPen(Qt.white))
+                painter.setFont(QFont("arial", 12))
+                price = f"Open: ${'{:,.2f}'.format(can.open)}, " \
+                        f"High: ${'{:,.2f}'.format(can.high)}, " \
+                        f"Low: ${'{:,.2f}'.format(can.low)}, " \
+                        f"Close: ${'{:,.2f}'.format(can.close)}, "
+                can_date = "Date: " + str(can_date)
                 painter.drawText(QRectF(5, 5, self.width(), self.height()),
                                  Qt.AlignLeft|Qt.AlignTop,
-                                 price + "\nDate: " + str(can_date))
+                                 price + can_date)
 
                 # draw cursor dashed lines
-                painter.setPen(QPen(Qt.black, 1, Qt.DashLine))
+                painter.setPen(QPen(StyleInfo.cursor_color, StyleInfo.pen_width, Qt.DashLine))
                 add_height = 0
                 if not can.green():
                     add_height = can.h
                 painter.drawLine(0, can.y + add_height, self.width(), can.y + add_height)  # horiz
                 painter.drawLine(can.x + int(can.w / 2), 0, can.x + int(can.w / 2), self.height())  # vert
+
+                # draw horizontal and vertical prices
+                # painter.setPen(QPen(cursor_color))
+                # painter.setPen(QPen(cursor_color))
+                # painter.setFont(QFont("arial"))
+                # painter.drawText(QRectF(0, can.y + add_height, self.width(), 50), Qt.AlignRight, "test")
 
     def calc_y2(self, candle: Candle) -> float:
         percent_of_screen = (candle.low - self.global_min) / (self.global_max - self.global_min)

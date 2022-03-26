@@ -5,6 +5,7 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from Candle import Candle
 from Strategy import Account, strategy_1, Trade
+import StyleInfo
 
 
 class InfoPanel(QtWidgets.QWidget):
@@ -22,13 +23,15 @@ class InfoPanel(QtWidgets.QWidget):
 
         self.panel = QWidget()
         self.layout.addWidget(self.panel)
-        self.panel.setStyleSheet("background-color: lightgray;")  # border: 5px solid blue;
+        self.panel.setStyleSheet(f"background-color: {StyleInfo.panel_color}; "
+                                 f"color: white;"
+                                 f"font-size: {StyleInfo.font_size}pt;")  # border: 5px solid blue;
         self.panel_layout = QVBoxLayout()
         self.panel_layout.setContentsMargins(0, 0, 0, 0)
         self.panel.setLayout(self.panel_layout)
 
         # main label
-        main_label = QtWidgets.QLabel("Trading Bot")
+        main_label = QtWidgets.QLabel("Strategies")
         main_label.setContentsMargins(0, 0, 0, 0)
         main_label.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         main_label.setAlignment(Qt.AlignCenter)
@@ -46,7 +49,7 @@ class InfoPanel(QtWidgets.QWidget):
         self.output = QPlainTextEdit()
         print(int(self.panel.height() / 2))
         self.output.setMinimumHeight(int(self.panel.height() / 2))
-        self.output.setStyleSheet("background-color: white;")
+        self.output.setStyleSheet(f"background-color: {StyleInfo.background_color_rgb};")
         self.panel_layout.addWidget(self.output)
 
     def run_strategy_1(self):
