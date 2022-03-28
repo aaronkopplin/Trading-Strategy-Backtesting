@@ -31,14 +31,15 @@ class InfoPanel(QtWidgets.QWidget):
         self.panel.setLayout(self.panel_layout)
 
         # main label
-        main_label = QtWidgets.QLabel("Strategies")
+        main_label = QtWidgets.QLabel("STRATEGIES")
         main_label.setContentsMargins(0, 0, 0, 0)
         main_label.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         main_label.setAlignment(Qt.AlignCenter)
         self.panel_layout.addWidget(main_label)
 
         # second label
-        self.strategy_1_button = QPushButton("Run Strategy 1")
+        self.strategy_1_button = QPushButton("STRATEGY 1")
+        self.strategy_1_button.setStyleSheet(StyleInfo.button_style)
         self.strategy_1_button.clicked.connect(self.run_strategy_1)
         self.panel_layout.addWidget(self.strategy_1_button)
 

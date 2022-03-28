@@ -4,6 +4,10 @@ from PyQt5.QtWidgets import QApplication, QMainWindow
 from Graph import Graph
 from InfoPanel import InfoPanel
 from Strategy import Account
+from Controls.Panel import *
+from PyQt5.QtWidgets import *
+from PyQt5.QtCore import *
+import StyleInfo
 
 
 class Window(QMainWindow):
@@ -14,24 +18,25 @@ class Window(QMainWindow):
         self.left = 150
         self.setMinimumWidth(1000)
         self.setMinimumHeight(500)
-        self.panel = QtWidgets.QWidget()
+
+        self.panel = Panel(LayoutDirection.HORIZONTAL)
         self.setContentsMargins(0, 0, 0, 0)
-        self.panel.setContentsMargins(0, 0, 0, 0)
-        self.panel_layout = QtWidgets.QGridLayout()
-        self.panel_layout.setContentsMargins(0, 0, 0, 0)
+
+        self.splitter = QSplitter(Qt.Horizontal)
+        self.splitter.setStyleSheet(StyleInfo.splitter_style)
+        self.panel.addWidget(self.splitter)
 
         # graph
         self.graph = Graph(candles)
         self.graph.setSizePolicy(PyQt5.QtWidgets.QSizePolicy(PyQt5.QtWidgets.QSizePolicy.Expanding,
                                                              PyQt5.QtWidgets.QSizePolicy.Expanding))
-        self.panel_layout.addWidget(self.graph, 0, 0)
+        self.splitter.addWidget(self.graph)
 
         # info panel
         self.info_panel = InfoPanel(candles)
         self.info_panel.run_strategy_event = self.run_strategy_event
-        self.panel_layout.addWidget(self.info_panel, 0, 1)
+        self.splitter.addWidget(self.info_panel)
 
-        self.panel.setLayout(self.panel_layout)
         self.setCentralWidget(self.panel)
         self.InitWindow()
         self.showMaximized()

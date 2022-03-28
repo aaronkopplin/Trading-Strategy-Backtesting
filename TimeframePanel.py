@@ -54,7 +54,8 @@ class TimeframePanel(QtWidgets.QWidget):
         self.load_parameters()
 
         # submit_button button
-        self.submit_button = QPushButton("submit")
+        self.submit_button = QPushButton("SUBMIT")
+        self.submit_button.setStyleSheet(StyleInfo.button_style)
         self.submit_button.clicked.connect(self.run_query)
         self.panel_layout.addWidget(self.submit_button)
 

@@ -211,14 +211,12 @@ class Chart(QtWidgets.QWidget):
 
             # if strategy has run and candle is bought or sold
             if curr_candle.bought:
-                color = QColor(204, 255, 179, 75)
-                painter.setPen(QPen(color, StyleInfo.pen_width, Qt.SolidLine))
-                painter.setBrush(QBrush(color, Qt.SolidPattern))
+                painter.setPen(QPen(StyleInfo.strategy_buy_candle, StyleInfo.pen_width, Qt.SolidLine))
+                painter.setBrush(QBrush(StyleInfo.strategy_buy_candle, Qt.SolidPattern))
                 painter.drawRect(x, 0, w, self.height())
             if curr_candle.sold:
-                color = QColor(255, 179, 179, 75)
-                painter.setPen(QPen(color, StyleInfo.pen_width, Qt.SolidLine))
-                painter.setBrush(QBrush(color, Qt.SolidPattern))
+                painter.setPen(QPen(StyleInfo.strategy_sell_candle, StyleInfo.pen_width, Qt.SolidLine))
+                painter.setBrush(QBrush(StyleInfo.strategy_sell_candle, Qt.SolidPattern))
                 painter.drawRect(x, 0, w, self.height())
 
             # draw candle bodies
