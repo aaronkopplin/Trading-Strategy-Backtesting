@@ -15,7 +15,13 @@ class InfoPanel(QtWidgets.QWidget):
         self.candles: list[Candle] = candles
         self.setContentsMargins(0, 0, 0, 0)
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        # self.setStyleSheet("border-width: 5px; border-color: blue;")
+        self.setStyleSheet(f"""
+                            background-color: {StyleInfo.panel_color};
+                            color: white;
+                            font-size: {StyleInfo.font_size}pt;
+                            border: none;
+                            
+                            """)
 
         self.layout = QtWidgets.QVBoxLayout()
         self.layout.setContentsMargins(0, 0, 0, 0)
@@ -23,15 +29,13 @@ class InfoPanel(QtWidgets.QWidget):
 
         self.panel = QWidget()
         self.layout.addWidget(self.panel)
-        self.panel.setStyleSheet(f"background-color: {StyleInfo.panel_color}; "
-                                 f"color: white;"
-                                 f"font-size: {StyleInfo.font_size}pt;")  # border: 5px solid blue;
         self.panel_layout = QVBoxLayout()
         self.panel_layout.setContentsMargins(0, 0, 0, 0)
         self.panel.setLayout(self.panel_layout)
 
         # main label
         main_label = QtWidgets.QLabel("STRATEGIES")
+        main_label.setStyleSheet(f"font: bold {StyleInfo.button_font_size}px;")
         main_label.setContentsMargins(0, 0, 0, 0)
         main_label.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         main_label.setAlignment(Qt.AlignCenter)
@@ -48,10 +52,30 @@ class InfoPanel(QtWidgets.QWidget):
         self.panel_layout.addItem(spacer)
 
         self.output = QPlainTextEdit()
-        print(int(self.panel.height() / 2))
+        self.output.setStyleSheet(f"""
+                                   background-color: {StyleInfo.background_color_rgb};
+                                   """)
         self.output.setMinimumHeight(int(self.panel.height() / 2))
-        self.output.setStyleSheet(f"background-color: {StyleInfo.background_color_rgb};")
-        self.panel_layout.addWidget(self.output)
+
+        self.tabs = QTabWidget()
+        self.tabs.setStyleSheet(f"""
+                                 QTabBar::tab {{
+                                     background-color: {StyleInfo.background_color_rgb}; 
+                                     font: bold {16}px;
+                                 }} 
+                                    
+                                 QTabBar::tab:selected {{ 
+                                     background-color: {StyleInfo.button_green_color_rgb}; 
+                                     font: bold {16}px;
+                                 }}
+                                 """)
+        self.tabs.setContentsMargins(0, 0, 0, 0)
+        self.tabs.addTab(self.output, "OUTPUT")
+        self.panel_layout.addWidget(self.tabs)
+
+        self.tab2 = QWidget()
+        self.tabs.addTab(self.tab2, "CHART")
+        self.tab2.setStyleSheet(f"background-color: {StyleInfo.background_color_rgb};")
 
     def run_strategy_1(self):
         account: Account = strategy_1(self.candles)
