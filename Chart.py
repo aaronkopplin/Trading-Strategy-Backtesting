@@ -168,12 +168,12 @@ class Chart(QtWidgets.QWidget):
         painter.setRenderHint(QPainter.HighQualityAntialiasing)
 
         #  draw background
-        painter.setPen(QPen(StyleInfo.background_color, StyleInfo.pen_width, Qt.SolidLine))
-        painter.setBrush(QBrush(StyleInfo.background_color, Qt.SolidPattern))
+        painter.setPen(QPen(StyleInfo.color_background, StyleInfo.pen_width, Qt.SolidLine))
+        painter.setBrush(QBrush(StyleInfo.color_background, Qt.SolidPattern))
         painter.drawRect(0, 0, self.width(), self.height())
 
         #  draw horizontal gridlines
-        painter.setPen(QPen(StyleInfo.gridline_color, StyleInfo.pen_width, Qt.SolidLine))
+        painter.setPen(QPen(StyleInfo.color_grid_line, StyleInfo.pen_width, Qt.SolidLine))
         for i in range(1, StyleInfo.num_horizontal_gridlines):
             x1 = 0
             x2 = self.width()
@@ -193,14 +193,14 @@ class Chart(QtWidgets.QWidget):
             x2 = int(x1)
             y2 = int(self.calc_y2(curr_candle))
             if curr_candle.close >= curr_candle.open:
-                painter.setPen(QPen(StyleInfo.green_candle, StyleInfo.pen_width, Qt.SolidLine))
+                painter.setPen(QPen(StyleInfo.color_green_candle, StyleInfo.pen_width, Qt.SolidLine))
             else:
-                painter.setPen(QPen(StyleInfo.red_candle, StyleInfo.pen_width, Qt.SolidLine))
+                painter.setPen(QPen(StyleInfo.color_red_candle, StyleInfo.pen_width, Qt.SolidLine))
             painter.drawLine(x1, y1, x2, y2)
 
             # draw grid lines
-            if i % StyleInfo.num_candles_per_gridline == 0:
-                painter.setPen(QPen(StyleInfo.gridline_color, StyleInfo.pen_width, Qt.SolidLine))
+            if i % StyleInfo.num_candles_per_grid_line == 0:
+                painter.setPen(QPen(StyleInfo.color_grid_line, StyleInfo.pen_width, Qt.SolidLine))
                 painter.drawLine(x1, 0, x1, self.height())
 
             # dimensions for candle bodies
@@ -211,21 +211,21 @@ class Chart(QtWidgets.QWidget):
 
             # if strategy has run and candle is bought or sold
             if curr_candle.bought:
-                painter.setPen(QPen(StyleInfo.strategy_buy_candle, StyleInfo.pen_width, Qt.SolidLine))
-                painter.setBrush(QBrush(StyleInfo.strategy_buy_candle, Qt.SolidPattern))
+                painter.setPen(QPen(StyleInfo.color_strategy_buy, StyleInfo.pen_width, Qt.SolidLine))
+                painter.setBrush(QBrush(StyleInfo.color_strategy_buy, Qt.SolidPattern))
                 painter.drawRect(x, 0, w, self.height())
             if curr_candle.sold:
-                painter.setPen(QPen(StyleInfo.strategy_sell_candle, StyleInfo.pen_width, Qt.SolidLine))
-                painter.setBrush(QBrush(StyleInfo.strategy_sell_candle, Qt.SolidPattern))
+                painter.setPen(QPen(StyleInfo.color_strategy_sell, StyleInfo.pen_width, Qt.SolidLine))
+                painter.setBrush(QBrush(StyleInfo.color_strategy_sell, Qt.SolidPattern))
                 painter.drawRect(x, 0, w, self.height())
 
             # draw candle bodies
             if curr_candle.close >= curr_candle.open:
-                painter.setPen(QPen(StyleInfo.green_candle, StyleInfo.pen_width, Qt.SolidLine))
-                painter.setBrush(QBrush(StyleInfo.background_color, Qt.SolidPattern))
+                painter.setPen(QPen(StyleInfo.color_green_candle, StyleInfo.pen_width, Qt.SolidLine))
+                painter.setBrush(QBrush(StyleInfo.color_background, Qt.SolidPattern))
             else:
-                painter.setPen(QPen(StyleInfo.red_candle, StyleInfo.pen_width, Qt.SolidLine))
-                painter.setBrush(QBrush(StyleInfo.red_candle, Qt.SolidPattern))
+                painter.setPen(QPen(StyleInfo.color_red_candle, StyleInfo.pen_width, Qt.SolidLine))
+                painter.setBrush(QBrush(StyleInfo.color_red_candle, Qt.SolidPattern))
 
             painter.drawRect(x, y, w, h)
             curr_candle.x = x
@@ -237,7 +237,7 @@ class Chart(QtWidgets.QWidget):
             # draw bollinger bands
             if i > 1:
                 # upper band
-                painter.setPen(QPen(StyleInfo.bollinger_band_color, StyleInfo.pen_width, Qt.SolidLine))
+                painter.setPen(QPen(StyleInfo.color_bollinger_band, StyleInfo.pen_width, Qt.SolidLine))
                 x1 = ((i-1) * self.candle_width) + (self.candle_width / 2)
                 y1 = self.convert_price_to_y(prev_candle.upper_band)
                 x2 = (i * self.candle_width) + (self.candle_width / 2)
@@ -255,7 +255,7 @@ class Chart(QtWidgets.QWidget):
                     painter.drawLine(QLine(int(x1), y1, int(x2), y2))
 
                 # lower band
-                painter.setPen(QPen(StyleInfo.bollinger_band_color, StyleInfo.pen_width, Qt.SolidLine))
+                painter.setPen(QPen(StyleInfo.color_bollinger_band, StyleInfo.pen_width, Qt.SolidLine))
                 x1 = ((i - 1) * self.candle_width) + (self.candle_width / 2)
                 y1 = self.convert_price_to_y(prev_candle.lower_band)
                 x2 = (i * self.candle_width) + (self.candle_width / 2)
@@ -280,7 +280,7 @@ class Chart(QtWidgets.QWidget):
                                  price + can_date)
 
                 # draw cursor dashed lines
-                painter.setPen(QPen(StyleInfo.cursor_color, StyleInfo.pen_width, Qt.DashLine))
+                painter.setPen(QPen(StyleInfo.color_cursor, StyleInfo.pen_width, Qt.DashLine))
                 add_height = 0
                 if not can.green():
                     add_height = can.h

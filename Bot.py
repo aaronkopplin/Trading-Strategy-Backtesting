@@ -15,9 +15,3 @@ print("percent gain for timeframe", ((candles[len(candles) - 1].open - candles[0
 
 open_application(candles)
 
-# account = Account(100)
-# prev_candle = candles.pop()
-# account.buy(account.usd_balance * .5, prev_candle)
-# for can in candles:
-#     next_candle = candles.pop()
-#     if

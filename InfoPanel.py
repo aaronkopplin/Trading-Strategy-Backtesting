@@ -1,81 +1,65 @@
+from PyQt5.QtWidgets import *
 from PyQt5 import QtWidgets
-from PyQt5.QtWidgets import *
-from PyQt5.QtGui import *
-from PyQt5.QtWidgets import *
-from PyQt5.QtCore import *
 from Candle import Candle
 from Strategy import Account, strategy_1, Trade
 import StyleInfo
+from Controls.Graph import Graph
+from Controls.Panel import *
+from Controls.Button import Button
+from PyQt5.QtCore import Qt
+from Controls.Label import Label
+from Controls.TabControl import TabControl
 
 
-class InfoPanel(QtWidgets.QWidget):
+class InfoPanel(Panel):
     def __init__(self, candles: list[Candle]):
         super().__init__()
         self.run_strategy_event = None
         self.candles: list[Candle] = candles
-        self.setContentsMargins(0, 0, 0, 0)
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        self.setStyleSheet(f"""
-                            background-color: {StyleInfo.panel_color};
-                            color: white;
-                            font-size: {StyleInfo.font_size}pt;
-                            border: none;
-                            
-                            """)
 
-        self.layout = QtWidgets.QVBoxLayout()
-        self.layout.setContentsMargins(0, 0, 0, 0)
-        self.setLayout(self.layout)
-
-        self.panel = QWidget()
-        self.layout.addWidget(self.panel)
-        self.panel_layout = QVBoxLayout()
-        self.panel_layout.setContentsMargins(0, 0, 0, 0)
-        self.panel.setLayout(self.panel_layout)
+        # create a panel to override the splitter color
+        self.panel = Panel()
+        self.add_widget(self.panel)
 
         # main label
-        main_label = QtWidgets.QLabel("STRATEGIES")
-        main_label.setStyleSheet(f"font: bold {StyleInfo.button_font_size}px;")
+        main_label = Label()
+        main_label.setText("STRATEGIES")
         main_label.setContentsMargins(0, 0, 0, 0)
         main_label.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         main_label.setAlignment(Qt.AlignCenter)
-        self.panel_layout.addWidget(main_label)
+        self.panel.add_widget(main_label)
 
         # second label
-        self.strategy_1_button = QPushButton("STRATEGY 1")
-        self.strategy_1_button.setStyleSheet(StyleInfo.button_style)
+        self.strategy_1_button = Button()
+        self.strategy_1_button.setText("STRATEGY 1")
         self.strategy_1_button.clicked.connect(self.run_strategy_1)
-        self.panel_layout.addWidget(self.strategy_1_button)
+        self.panel.add_widget(self.strategy_1_button)
 
         # bottom spacer to push everything to top
-        spacer = QSpacerItem(10, 10, QSizePolicy.Expanding, QSizePolicy.Expanding)
-        self.panel_layout.addItem(spacer)
+        self.spacer = QSpacerItem(10, 10, QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.panel.add_item(self.spacer)
 
-        self.output = QPlainTextEdit()
-        self.output.setStyleSheet(f"""
-                                   background-color: {StyleInfo.background_color_rgb};
-                                   """)
-        self.output.setMinimumHeight(int(self.panel.height() / 2))
-
-        self.tabs = QTabWidget()
-        self.tabs.setStyleSheet(f"""
-                                 QTabBar::tab {{
-                                     background-color: {StyleInfo.background_color_rgb}; 
-                                     font: bold {16}px;
-                                 }} 
-                                    
-                                 QTabBar::tab:selected {{ 
-                                     background-color: {StyleInfo.button_green_color_rgb}; 
-                                     font: bold {16}px;
-                                 }}
-                                 """)
+        self.tabs = TabControl()
         self.tabs.setContentsMargins(0, 0, 0, 0)
-        self.tabs.addTab(self.output, "OUTPUT")
-        self.panel_layout.addWidget(self.tabs)
+        self.add_output()
 
-        self.tab2 = QWidget()
-        self.tabs.addTab(self.tab2, "CHART")
-        self.tab2.setStyleSheet(f"background-color: {StyleInfo.background_color_rgb};")
+        self.add_widget(self.tabs)
+        self.add_performance()
+
+    def add_output(self):
+        self.output = QPlainTextEdit()
+        self.output.setMinimumHeight(int(self.height() / 2))
+        self.output.setStyleSheet(f"""
+                                   background-color: {StyleInfo.rgb_background}; 
+                                   color: white;
+                                   font: {StyleInfo.font_size}px;
+                                   """)
+        self.tabs.addTab(self.output, "OUTPUT")
+
+    def add_performance(self):
+        self.performance_graph = Graph()
+        self.tabs.addTab(self.performance_graph, "PERFORMANCE")
 
     def run_strategy_1(self):
         account: Account = strategy_1(self.candles)
@@ -93,4 +77,5 @@ class InfoPanel(QtWidgets.QWidget):
         log_str = "\n".join([log[0] for log in logs])
         ending_account_val = account.account_value(self.candles[len(self.candles) - 1].close)
         self.output.setPlainText(log_str)
+        self.performance_graph.set_data(account.account_values)
 

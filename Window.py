@@ -4,10 +4,12 @@ from PyQt5.QtWidgets import QApplication, QMainWindow
 from Graph import Graph
 from InfoPanel import InfoPanel
 from Strategy import Account
-from Controls.Panel import *
+from Controls.Panel import Panel
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 import StyleInfo
+from Controls.Splitter import Splitter
+from Controls.LayoutDirection import LayoutDirection
 
 
 class Window(QMainWindow):
@@ -18,13 +20,10 @@ class Window(QMainWindow):
         self.left = 150
         self.setMinimumWidth(1000)
         self.setMinimumHeight(500)
-
-        self.panel = Panel(LayoutDirection.HORIZONTAL)
         self.setContentsMargins(0, 0, 0, 0)
 
-        self.splitter = QSplitter(Qt.Horizontal)
-        self.splitter.setStyleSheet(StyleInfo.splitter_style)
-        self.panel.addWidget(self.splitter)
+        # splitter
+        self.splitter = Splitter(LayoutDirection.HORIZONTAL)
 
         # graph
         self.graph = Graph(candles)
@@ -37,7 +36,8 @@ class Window(QMainWindow):
         self.info_panel.run_strategy_event = self.run_strategy_event
         self.splitter.addWidget(self.info_panel)
 
-        self.setCentralWidget(self.panel)
+        # finish initialization
+        self.setCentralWidget(self.splitter)
         self.InitWindow()
         self.showMaximized()
 
@@ -49,7 +49,6 @@ class Window(QMainWindow):
 
     def InitWindow(self):
         self.setWindowTitle(self.title)
-        # self.setGeometry(self.top, self.left, self.width, self.height)
         self.show()
 
 

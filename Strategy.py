@@ -18,6 +18,9 @@ class Trade:
         self.profit = self.crypto_amount * (self.sell_price - self.buy_price)
         self.sell_candle_index = candle_index
         return self.profit
+    #
+    # def __repr__(self):
+    #     return f"buy price: {self.buy_price}"
 
 
 class Account:
@@ -25,9 +28,14 @@ class Account:
         self.usd_balance: float = balance
         self.crypto_balance: float = 0
         self.trades: list[Trade] = []
+        self.account_values = []
+
+    def store_account_value(self, price: float):
+        value = self.account_value(price)
+        print(value)
+        self.account_values.append(value)
 
     def account_value(self, price: float):
-        print(self.usd_balance, self.crypto_balance)
         return self.usd_balance + (price * self.crypto_balance)
 
     def buy(self, price: float, amount: float, candle_index: int):
@@ -39,6 +47,7 @@ class Account:
 
     def sell(self, price: float, index: int, candle_index: int):
         profit = self.trades[index].sell(price, candle_index)
+        self.usd_balance += self.trades[index].usd_amount
         self.usd_balance += profit
         self.crypto_balance -= self.trades[index].crypto_amount
 
@@ -55,13 +64,16 @@ def strategy_1(candles: list) -> Account:
     for i in range(2, len(candles)):
         can = candles[i]
         if can.close < can.lower_band:
-            amount = account.usd_balance * .01
+            amount = account.usd_balance * .05
             account.buy(can.close, amount, i)
         if can.close > can.upper_band:
             breakout = True
         if breakout and can.open > can.sma > can.close:
             breakout = False
             account.sell_all_open_positions(can.sma, i)
+        account.store_account_value(can.close)
 
+    for trade in account.trades:
+        print(trade.__dict__ )
     return account
 
