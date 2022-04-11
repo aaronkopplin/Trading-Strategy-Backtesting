@@ -97,14 +97,8 @@ class InfoPanel(Panel):
         logs: list[(str, int)] = []
         trade: Trade
         for trade in account.trades:
-            buy_price = '${:,.2f}'.format(trade.buy_price)
-            logs.append((f"bought {trade.crypto_amount} at {buy_price}", trade.buy_candle_index))
-            if trade.sell_candle_index:
-                sell_price = "${:,.2f}".format(trade.sell_price)
-                logs.append((f"sold {trade.crypto_amount} at {sell_price}", trade.sell_candle_index))
-
-        logs = sorted(logs, key=lambda log: log[1])  # sort based on candle index
-        log_str = "\n".join([log[0] for log in logs])
+            logs.append('${:,.2f}'.format(trade.profit))
+        log_str = "\n".join([log for log in logs])
         ending_account_val = account.account_value(self.candles[len(self.candles) - 1].close)
         self.output.setPlainText(log_str)
         self.performance_graph.set_data(account.account_values)
