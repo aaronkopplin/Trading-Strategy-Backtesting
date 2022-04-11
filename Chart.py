@@ -35,9 +35,17 @@ class Chart(QtWidgets.QWidget):
         self.candle_width = self.width() / self.num_candles_on_screen()
         self.mouse_prev_location = 0
         self.mouse_down = False
+        self.draw_gridlines = False
+        self.strategy_data_visible = True
+
+    def clear(self):
+        self.strategy_data_visible = False
+        self.update()
 
     def strategy_run_event(self, account: Account):
         trade: Trade
+
+        self.strategy_data_visible = True
         for trade in account.trades:
             buy_can: Candle = self.candles[trade.buy_candle_index]
             buy_can.bought = True
@@ -161,17 +169,9 @@ class Chart(QtWidgets.QWidget):
         upper_bands = [can.upper_band for can in cans if can.upper_band != 0]
         return max(highs + upper_bands)
 
-    def draw_objects(self, painter: QPainter):
-        self.global_min = self.min_candle_val()
-        self.global_max = self.max_candle_val()
-        self.candle_bodies.clear()
-        painter.setRenderHint(QPainter.HighQualityAntialiasing)
-
-        #  draw background
-        painter.setPen(QPen(StyleInfo.color_background, StyleInfo.pen_width, Qt.SolidLine))
-        painter.setBrush(QBrush(StyleInfo.color_background, Qt.SolidPattern))
-        painter.drawRect(0, 0, self.width(), self.height())
-
+    def draw_horizontal_gridlines(self, painter: QPainter):
+        if not self.draw_gridlines:
+            return
         #  draw horizontal gridlines
         painter.setPen(QPen(StyleInfo.color_grid_line, StyleInfo.pen_width, Qt.SolidLine))
         for i in range(1, StyleInfo.num_horizontal_gridlines):
@@ -181,35 +181,44 @@ class Chart(QtWidgets.QWidget):
             y2 = y1
             painter.drawLine(x1, y1, x2, y2)
 
-        # draw candle bodies
-        self.candle_width = self.width() / self.num_candles_on_screen()
-        for i in range(self.num_candles_on_screen()):
-            curr_candle: Candle = self.candles[i + self.first_candle]
-            prev_candle: Candle = self.candles[i + self.first_candle - 1]
+    def draw_vertical_gridlines(self, painter: QPainter, index: int, x1: int):
+        if not self.draw_gridlines:
+            return
+        # draw grid lines
+        if index % StyleInfo.num_candles_per_grid_line == 0:
+            painter.setPen(QPen(StyleInfo.color_grid_line, StyleInfo.pen_width, Qt.SolidLine))
+            painter.drawLine(x1, 0, x1, self.height())
 
-            # draw wicks
-            x1 = int((i * self.candle_width) + (self.candle_width / 2))
-            y1 = int(self.calc_y1(curr_candle))
-            x2 = int(x1)
-            y2 = int(self.calc_y2(curr_candle))
-            if curr_candle.close >= curr_candle.open:
-                painter.setPen(QPen(StyleInfo.color_green_candle, StyleInfo.pen_width, Qt.SolidLine))
-            else:
-                painter.setPen(QPen(StyleInfo.color_red_candle, StyleInfo.pen_width, Qt.SolidLine))
-            painter.drawLine(x1, y1, x2, y2)
+    def draw_background(self, painter):
+        #  draw background
+        painter.setPen(QPen(StyleInfo.color_background, StyleInfo.pen_width, Qt.SolidLine))
+        painter.setBrush(QBrush(StyleInfo.color_background, Qt.SolidPattern))
+        painter.drawRect(0, 0, self.width(), self.height())
 
-            # draw grid lines
-            if i % StyleInfo.num_candles_per_grid_line == 0:
-                painter.setPen(QPen(StyleInfo.color_grid_line, StyleInfo.pen_width, Qt.SolidLine))
-                painter.drawLine(x1, 0, x1, self.height())
+    def draw_candle_wicks(self, painter: QPainter, curr_candle: Candle, index: int):
+        # draw wicks
+        x1 = int((index * self.candle_width) + (self.candle_width / 2))
+        y1 = int(self.calc_y1(curr_candle))
+        x2 = int(x1)
+        y2 = int(self.calc_y2(curr_candle))
+        if curr_candle.close >= curr_candle.open:
+            painter.setPen(QPen(StyleInfo.color_green_candle, StyleInfo.pen_width, Qt.SolidLine))
+        else:
+            painter.setPen(QPen(StyleInfo.color_red_candle, StyleInfo.pen_width, Qt.SolidLine))
+        painter.drawLine(x1, y1, x2, y2)
+        return x1, y1, x2, y2
 
-            # dimensions for candle bodies
-            x = int(i * self.candle_width)
-            y = int(self.calc_y(curr_candle, self.global_max, self.global_min))
-            w = int(self.candle_width)
-            h = int(self.calc_candle_height(curr_candle, self.global_max, self.global_min))
+    def get_dimensions_for_curr_candle(self, curr_candle: Candle, index: int):
+        # dimensions for candle bodies
+        x = int(index * self.candle_width)
+        y = int(self.calc_y(curr_candle, self.global_max, self.global_min))
+        w = int(self.candle_width)
+        h = int(self.calc_candle_height(curr_candle, self.global_max, self.global_min))
+        return x, y, w, h
 
-            # if strategy has run and candle is bought or sold
+    def draw_buy_sell_indicators(self, painter: QPainter, curr_candle: Candle, x: int, w: int):
+        # if strategy has run and candle is bought or sold
+        if self.strategy_data_visible:
             if curr_candle.bought:
                 painter.setPen(QPen(StyleInfo.color_strategy_buy, StyleInfo.pen_width, Qt.SolidLine))
                 painter.setBrush(QBrush(StyleInfo.color_strategy_buy, Qt.SolidPattern))
@@ -218,6 +227,29 @@ class Chart(QtWidgets.QWidget):
                 painter.setPen(QPen(StyleInfo.color_strategy_sell, StyleInfo.pen_width, Qt.SolidLine))
                 painter.setBrush(QBrush(StyleInfo.color_strategy_sell, Qt.SolidPattern))
                 painter.drawRect(x, 0, w, self.height())
+
+    def draw_objects(self, painter: QPainter):
+        self.global_min = self.min_candle_val()
+        self.global_max = self.max_candle_val()
+        self.candle_bodies.clear()
+        painter.setRenderHint(QPainter.HighQualityAntialiasing)
+
+        self.draw_background(painter)
+        self.draw_horizontal_gridlines(painter)
+
+        # draw candle bodies
+        self.candle_width = self.width() / self.num_candles_on_screen()
+        for i in range(self.num_candles_on_screen()):
+            curr_candle: Candle = self.candles[i + self.first_candle]
+            prev_candle: Candle = self.candles[i + self.first_candle - 1]
+
+            x1, y1, x2, y2 = self.draw_candle_wicks(painter, curr_candle, i)
+
+            self.draw_vertical_gridlines(painter, i, x1)
+
+            x, y, w, h = self.get_dimensions_for_curr_candle(curr_candle, i)
+
+            self.draw_buy_sell_indicators(painter, curr_candle, x, w)
 
             # draw candle bodies
             if curr_candle.close >= curr_candle.open:

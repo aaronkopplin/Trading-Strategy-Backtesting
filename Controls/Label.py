@@ -8,3 +8,4 @@ class Label(QtWidgets.QLabel):
         self.setContentsMargins(0, 0, 0, 0)
         self.setStyleSheet(f"""font: bold {StyleInfo.font_size}px;
                                 color: white;""")
+        self.setSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Minimum)

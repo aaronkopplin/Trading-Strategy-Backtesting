@@ -16,8 +16,6 @@ class Graph(QtWidgets.QWidget):
     # data should be a list of y values to be plotted along x axis
     # using a line chart
     def set_data(self, data: list[float]):
-        if len(data) == 0:
-            raise "Data is empty"
         self.data = data
         self.update()
 
@@ -49,9 +47,9 @@ class Graph(QtWidgets.QWidget):
             for i in range(num_points - 1):
                 painter.setPen(QPen(Qt.white, StyleInfo.pen_width, Qt.SolidLine))
                 x1 = int(i * (self.width() / num_points))
-                y1 = self.height() - int(((self.data[i] - minimum) / diff) * self.height())
+                y1 = int(self.height() / 2) if diff == 0 else self.height() - int(((self.data[i] - minimum) / diff) * self.height())
                 x2 = int((i + 1) * (self.width() / num_points))
-                y2 = self.height() - int(((self.data[i + 1] - minimum) / diff) * self.height())
+                y2 = int(self.height() / 2) if diff == 0 else self.height() - int(((self.data[i + 1] - minimum) / diff) * self.height())
                 painter.drawLine(x1, y1, x2, y2)
 
     def draw_objects(self, painter: QPainter):
@@ -59,3 +57,8 @@ class Graph(QtWidgets.QWidget):
         self.draw_background(painter)
         self.draw_horizontal_gridlines(painter)
         self.plot_lines(painter)
+
+    def clear_graph(self):
+        self.data = []
+        self.update()
+

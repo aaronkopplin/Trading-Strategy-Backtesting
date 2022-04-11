@@ -32,7 +32,7 @@ class Window(QMainWindow):
         self.splitter.addWidget(self.graph)
 
         # info panel
-        self.info_panel = InfoPanel(candles)
+        self.info_panel = InfoPanel(candles, self.graph)
         self.info_panel.run_strategy_event = self.run_strategy_event
         self.splitter.addWidget(self.info_panel)
 

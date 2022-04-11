@@ -11,7 +11,6 @@ def open_application(candles: list):
 
 
 candles = read_candles()
-print("percent gain for timeframe", ((candles[len(candles) - 1].open - candles[0].open ) / candles[0].open) * 100)
 
 open_application(candles)
 

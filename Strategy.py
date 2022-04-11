@@ -25,6 +25,7 @@ class Trade:
 
 class Account:
     def __init__(self, balance: float):
+        self.beginning_balance = balance
         self.usd_balance: float = balance
         self.crypto_balance: float = 0
         self.trades: list[Trade] = []
@@ -32,7 +33,6 @@ class Account:
 
     def store_account_value(self, price: float):
         value = self.account_value(price)
-        print(value)
         self.account_values.append(value)
 
     def account_value(self, price: float):
@@ -58,13 +58,16 @@ class Account:
                 self.sell(price, i, candle_index)
 
 
-def strategy_1(candles: list) -> Account:
+def strategy_1(candles: list, parameters: dict) -> Account:
     account = Account(1000)
+    percent_per_trade: float = parameters["percent_per_trade"]
+    if percent_per_trade is None:
+        percent_per_trade = .05
     breakout = False
     for i in range(2, len(candles)):
         can = candles[i]
         if can.close < can.lower_band:
-            amount = account.usd_balance * .05
+            amount = account.usd_balance * percent_per_trade
             account.buy(can.close, amount, i)
         if can.close > can.upper_band:
             breakout = True
@@ -72,8 +75,5 @@ def strategy_1(candles: list) -> Account:
             breakout = False
             account.sell_all_open_positions(can.sma, i)
         account.store_account_value(can.close)
-
-    for trade in account.trades:
-        print(trade.__dict__ )
     return account
 
