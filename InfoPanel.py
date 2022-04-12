@@ -13,6 +13,7 @@ from Controls.TabControl import TabControl
 from ParameterPanel import ParameterPanel
 import Graph as PriceGraph
 from Controls.StrategyButton import StrategyButton
+from Trade import Trade
 
 
 class InfoPanel(Panel):
