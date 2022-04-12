@@ -1,7 +1,8 @@
 from PyQt5.QtWidgets import *
 from PyQt5 import QtWidgets
 from Candle import Candle
-from Strategy import Account, strategy_1, Trade
+from Strategy import Strategy
+from Strategies import *
 import StyleInfo
 from Controls.Graph import Graph
 from Controls.Panel import *
@@ -11,13 +12,14 @@ from Controls.Label import Label
 from Controls.TabControl import TabControl
 from ParameterPanel import ParameterPanel
 import Graph as PriceGraph
+from Controls.StrategyButton import StrategyButton
 
 
 class InfoPanel(Panel):
-    def __init__(self, candles: list[Candle], graph: PriceGraph):
+    def __init__(self, candles: list[Candle], graph: PriceGraph, strategy_run_event: Callable):
         super().__init__()
         self.graph = graph
-        self.run_strategy_event = None
+        self.run_strategy_event = strategy_run_event
         self.candles: list[Candle] = candles
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
@@ -37,11 +39,7 @@ class InfoPanel(Panel):
         self.spacer = QSpacerItem(10, 10, QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.panel.add_item(self.spacer)
 
-        # second label
-        self.strategy_1_button = Button()
-        self.strategy_1_button.setText("STRATEGY 1")
-        self.strategy_1_button.clicked.connect(self.run_strategy_1)
-        self.panel.add_widget(self.strategy_1_button)
+        self.add_strategy_buttons()
 
         self.clear_button = Button()
         self.clear_button.setText("CLEAR")
@@ -91,8 +89,15 @@ class InfoPanel(Panel):
         self.performance_graph = Graph()
         self.tabs.addTab(self.performance_graph, "PERFORMANCE")
 
-    def run_strategy_1(self):
-        account: Account = strategy_1(candles=self.candles, parameters=self.parameters.get_parameters())
+    def add_strategy_buttons(self):
+        for strategy in strategies:
+            parameters = {
+                "candles": self.candles
+            }
+            b = StrategyButton(strategy, parameters, self.after_strategy_callback)
+            self.panel.add_widget(b)
+
+    def after_strategy_callback(self, account: Account):
         self.run_strategy_event(account)
         logs: list[(str, int)] = []
         trade: Trade
