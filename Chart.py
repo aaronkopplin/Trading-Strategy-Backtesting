@@ -55,7 +55,10 @@ class Chart(QtWidgets.QWidget):
         self.update()
 
     def min_zoom(self) -> int:
-        return max(int(float(len(self.candles)) / float(10)), 1)
+        return min(int(float(len(self.candles)) / float(10)), 10)
+
+    def zoom_rate(self) -> int:
+        return int(self.num_candles_on_screen() / 10)
 
     def num_candles_on_screen(self):
         return self.last_candle - self.first_candle
@@ -124,20 +127,24 @@ class Chart(QtWidgets.QWidget):
 
     def wheelEvent(self, a0: QtGui.QWheelEvent) -> None:
         if a0.angleDelta().y() < 0:  # zoom out
-            for i in range(self.min_zoom()):
-                if self.num_candles_on_screen() < len(self.candles):
-                    if self.first_candle > 0:
+            for i in range(self.zoom_rate()):
+                if self.num_candles_on_screen() < len(self.candles) - 1:
+                    if self.first_candle > 1:
                         self.first_candle -= 1
-                    elif self.last_candle < len(self.candles):
+                    if self.last_candle < len(self.candles):
                         self.last_candle += 1
+                    # elif self.last_candle < len(self.candles):
+                    #     self.last_candle += 1
 
         if a0.angleDelta().y() > 0:  # zoom in
-            for i in range(self.min_zoom()):
+            for i in range(self.zoom_rate()):
                 if self.num_candles_on_screen() > self.min_zoom():
-                    if self.first_candle < self.last_candle - self.min_zoom():
+                    if self.first_candle < self.last_candle - self.min_zoom() - 1:
                         self.first_candle += 1
-                    elif self.last_candle > self.first_candle + self.min_zoom():
+                    if self.last_candle > 1:
                         self.last_candle -= 1
+                    # elif self.last_candle > self.first_candle + self.min_zoom():
+                    #     self.last_candle -= 1
 
         self.update()
 

@@ -2,7 +2,7 @@ from typing import Union
 
 
 class Trade:
-    def __init__(self, buy_price: float, amount: float, candle_index: int):
+    def __init__(self, buy_price: float, amount: float, candle_index: int, usd_acct_bal):
         self.buy_price = buy_price
         self.sell_price: float = 0.0
         self.profit: float = 0.0
@@ -11,6 +11,7 @@ class Trade:
         self.open: bool = True
         self.buy_candle_index = candle_index
         self.sell_candle_index: Union[int, None] = None
+        self.account_usd_bal = usd_acct_bal
 
     def sell(self, sell_price: float, candle_index: int) -> float:
         self.open = False
