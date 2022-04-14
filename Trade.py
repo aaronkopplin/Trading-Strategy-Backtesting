@@ -13,9 +13,9 @@ class Trade:
         self.sell_candle_index: Union[int, None] = None
         self.account_usd_bal = usd_acct_bal
 
-    def sell(self, sell_price: float, candle_index: int) -> float:
+    def sell(self, sell_price: float, candle_index: int) -> tuple[float, float]:
         self.open = False
         self.sell_price = sell_price
         self.profit = self.crypto_amount * (self.sell_price - self.buy_price)
         self.sell_candle_index = candle_index
-        return self.profit
+        return self.profit, self.usd_amount

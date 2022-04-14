@@ -123,12 +123,14 @@ class InfoPanel(Panel):
         lowest_acct_bal = min(account.account_values)
         lowest_cash_reserves = min(account.cash_reserve_values)
         largest_profit = max(account.profits)
+        fees_paid = account.fees_taken
 
         stats.append(f"beginning bal: {self.format_val(begin_bal)}, ending bal: {self.format_val(end_bal)}")
         stats.append(f"percent change: {percent_change}")
         stats.append(f"lowest account value: {self.format_val(lowest_acct_bal)}")
         stats.append(f"lowest cash reserves: {self.format_val(lowest_cash_reserves)}")
         stats.append(f"largest profit: {self.format_val(largest_profit)}")
+        stats.append(f"fees paid: {self.format_val(fees_paid)}")
 
         self.statistics.setPlainText("\n".join(stat for stat in stats))
 
