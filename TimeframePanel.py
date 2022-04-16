@@ -4,7 +4,7 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from datetime import date, timedelta
 from datetime import datetime
-from Chart import Chart
+from CandleChart import CandleChart
 from Controls.Button import Button
 from Strategy import Account, Trade
 import StyleInfo
@@ -13,7 +13,7 @@ from Controls.LayoutDirection import LayoutDirection
 
 
 class TimeframePanel(Panel):
-    def __init__(self, chart: Chart):
+    def __init__(self, chart: CandleChart):
         super().__init__()
         self.chart = chart
         self.set_layout(LayoutDirection.HORIZONTAL)

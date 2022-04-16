@@ -55,5 +55,6 @@ class Account:
             if self.trades[i].open:
                 if self.sell(price, i, candle_index):
                     success = True
+
         return success
 

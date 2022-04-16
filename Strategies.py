@@ -10,34 +10,39 @@ def strategy_1(parameters: dict, callback: Callable):
     percent_per_trade = .05
     breakout = False
     first_trade_after_sell = None
+    price_at_sell = 0
     for i in range(2, len(candles)):
         trade_decision = ""
         prev_can = candles[i-1]
         can = candles[i]
-        if can.close < can.lower_band:
+        if can.open < can.lower_band and can.close < can.lower_band:
             trade_decision = "Buy"
         if can.close > can.upper_band:
             breakout = True
-        if breakout and can.low < prev_can.sma:
+        if breakout and can.close < can.upper_band:
             breakout = False
             trade_decision = "Sell"
+            price_at_sell = can.close
 
         # stop loss
         if len(account.trades) > 0 and first_trade_after_sell is not None:
-            if can.close < (first_trade_after_sell.buy_price * .99):
+            if can.close < (first_trade_after_sell.buy_price * .995):
                 trade_decision = "Sell"
+                price_at_sell = can.close
 
         if trade_decision == "Buy":
             amount = account.usd_balance * percent_per_trade
             account.buy(can.close, amount, i)
-            if percent_per_trade < .15:
-                percent_per_trade += .04
+            if percent_per_trade < .1:
+                percent_per_trade += .00
             if first_trade_after_sell is None:
                 first_trade_after_sell = account.trades[-1]
         elif trade_decision == "Sell":
-            account.sell_all_open_positions(prev_can.sma, i)
+            success = account.sell_all_open_positions(price_at_sell, i)
             percent_per_trade = .05
             first_trade_after_sell = None
+            if success:
+                can.sell_price = price_at_sell
 
         account.store_account_value(can.close)
 

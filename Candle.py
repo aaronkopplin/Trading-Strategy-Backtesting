@@ -17,6 +17,9 @@ class Candle:
         self.h = 0
         self.bought: bool = False
         self.sold: bool = False
+        self.sell_price = 0
+        self.local_min = False
+        self.local_max = False
 
     def green(self):
         return self.open < self.close
