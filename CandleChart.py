@@ -1,24 +1,19 @@
-import csv
 from PyQt5 import QtGui, QtWidgets
-from PyQt5.QtGui import QPainter, QBrush, QPen, QPainterPath
+from PyQt5.QtGui import  QBrush, QPen, QPainterPath
 from PyQt5.QtCore import Qt
 from PyQt5 import QtCore
-from PyQt5.QtWidgets import QApplication, QMainWindow
-from PyQt5.QtGui import QPainter, QColor, QFont
-from PyQt5.QtWidgets import *
+from PyQt5.QtGui import QPainter, QColor
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
-from datetime import date, timedelta
 from Candle import Candle
 import yfinance
 from PullData import read_candles
-from datetime import datetime
 from Strategy import Account, Trade
 import StyleInfo
 
 
 def convert_price_to_str(price: float) -> str:
-    return '{:,.2f}'.format(price)
+    return '${:,.0f}'.format(price)
 
 
 class CandleChart(QtWidgets.QWidget):
@@ -45,6 +40,7 @@ class CandleChart(QtWidgets.QWidget):
         self.draw_boll_bands = False
         self.draw_trend_indicators = False
         self.num_prices_in_gutter = 10
+        self.num_vertical_gridlines = 10
 
     def __candle_chart_width(self) -> int:
         return self.width() - self.price_gutter_width
@@ -199,7 +195,7 @@ class CandleChart(QtWidgets.QWidget):
         if not self.draw_gridlines:
             return
         # draw grid lines
-        if index % StyleInfo.num_candles_per_grid_line == 0:
+        if (index + int(self.num_candles_on_screen() / (2 * self.num_vertical_gridlines))) % int(self.num_candles_on_screen() / self.num_vertical_gridlines) == 0:
             painter.setPen(QPen(StyleInfo.color_grid_line, StyleInfo.pen_width, Qt.SolidLine))
             painter.drawLine(x1, 0, x1, self.height())
 
@@ -209,9 +205,12 @@ class CandleChart(QtWidgets.QWidget):
         painter.setBrush(QBrush(StyleInfo.color_background, Qt.SolidPattern))
         painter.drawRect(0, 0, self.__candle_chart_width(), self.height())
 
+    def __get_x_for_candle_index(self, index: int) -> int:
+        return int((index * self.candle_width) + (self.candle_width / 2))
+
     def draw_candle_wicks(self, painter: QPainter, curr_candle: Candle, index: int):
         # draw wicks
-        x1 = int((index * self.candle_width) + (self.candle_width / 2))
+        x1 = self.__get_x_for_candle_index(index)
         y1 = int(self.calc_y1(curr_candle))
         x2 = int(x1)
         y2 = int(self.calc_y2(curr_candle))
@@ -391,8 +390,8 @@ class CandleChart(QtWidgets.QWidget):
         for i in range(self.num_candles_on_screen()):
             curr_candle: Candle = self.candles[i + self.first_candle]
             prev_candle: Candle = self.candles[i + self.first_candle - 1]
+            self.draw_vertical_gridlines(painter, i, self.__get_x_for_candle_index(i))
             x1, y1, x2, y2 = self.draw_candle_wicks(painter, curr_candle, i)
-            # self.draw_vertical_gridlines(painter, i, x1)
             x, y, w, h = self.get_dimensions_for_curr_candle(curr_candle, i)
             self.draw_buy_sell_indicators(painter, curr_candle, x, w)
             self.draw_candle_bodies(painter, curr_candle, x, y, w, h)
