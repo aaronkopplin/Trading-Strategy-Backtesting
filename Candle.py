@@ -1,6 +1,6 @@
 class Candle:
     def __init__(self, vals: list):
-        self.date_time = vals[0]
+        self.date_time: str = vals[0]
         self.open = float(vals[1])
         self.high = float(vals[2])
         self.low = float(vals[3])

@@ -10,6 +10,7 @@ import yfinance
 from PullData import read_candles
 from Strategy import Account, Trade
 import StyleInfo
+import datetime
 
 
 def convert_price_to_str(price: float) -> str:
@@ -20,6 +21,7 @@ class CandleChart(QtWidgets.QWidget):
     def __init__(self, candles: list):
         super().__init__()
         self.price_gutter_width = 100
+        self.date_gutter_height = 30
         self.ticker_symbol = "BTC-USD"
         self.setContentsMargins(0, 0, 0, 0)
         self.candles = candles
@@ -41,9 +43,13 @@ class CandleChart(QtWidgets.QWidget):
         self.draw_trend_indicators = False
         self.num_prices_in_gutter = 10
         self.num_vertical_gridlines = 10
+        self.gridline_candles: list[int] = []
 
     def __candle_chart_width(self) -> int:
         return self.width() - self.price_gutter_width
+
+    def __candle_chart_height(self) -> int:
+        return self.height() - self.date_gutter_height
 
     def draw_bollinger_bands(self, visible: bool):
         self.draw_boll_bands = visible
@@ -53,7 +59,7 @@ class CandleChart(QtWidgets.QWidget):
         self.draw_trend_indicators = visible
         self.update()
 
-    def __clear(self):
+    def clear(self):
         self.strategy_data_visible = False
         self.update()
 
@@ -140,28 +146,38 @@ class CandleChart(QtWidgets.QWidget):
         self.mouse_y = a0.y()
         self.update()
 
+    def zoom_out(self):
+        for i in range(self.zoom_rate()):
+            if self.num_candles_on_screen() < len(self.candles) - 1:
+                if self.first_candle > 1:
+                    self.first_candle -= 1
+                if self.last_candle < len(self.candles):
+                    self.last_candle += 1
+
+    def zoom_in(self):
+        for i in range(self.zoom_rate()):
+            if self.num_candles_on_screen() > self.min_zoom():
+                if self.first_candle < self.last_candle - self.min_zoom() - 1:
+                    self.first_candle += 1
+                if self.last_candle > 1:
+                    self.last_candle -= 1
+
     def wheelEvent(self, a0: QtGui.QWheelEvent) -> None:
         if a0.angleDelta().y() < 0:  # zoom out
-            for i in range(self.zoom_rate()):
-                if self.num_candles_on_screen() < len(self.candles) - 1:
-                    if self.first_candle > 1:
-                        self.first_candle -= 1
-                    if self.last_candle < len(self.candles):
-                        self.last_candle += 1
-                    # elif self.last_candle < len(self.candles):
-                    #     self.last_candle += 1
+            self.zoom_out()
 
         if a0.angleDelta().y() > 0:  # zoom in
-            for i in range(self.zoom_rate()):
-                if self.num_candles_on_screen() > self.min_zoom():
-                    if self.first_candle < self.last_candle - self.min_zoom() - 1:
-                        self.first_candle += 1
-                    if self.last_candle > 1:
-                        self.last_candle -= 1
-                    # elif self.last_candle > self.first_candle + self.min_zoom():
-                    #     self.last_candle -= 1
-
+            self.zoom_in()
+        self.compute_vertical_gridlines()
         self.update()
+
+    def compute_vertical_gridlines(self):
+        # compute which candles are vertical gridline candles
+        self.gridline_candles = []
+        for i in range(len(self.candles)):
+            dist_between_gridline_candles = int(self.num_candles_on_screen() / self.num_vertical_gridlines)
+            if i % dist_between_gridline_candles == 0:
+                self.gridline_candles.append(i)
 
     def find_candle(self, x: float) -> Candle:
         for can in self.candle_bodies:
@@ -169,10 +185,10 @@ class CandleChart(QtWidgets.QWidget):
                 return can
 
     def convert_y_to_price(self, y: int) -> float:
-        return self.global_min + ((self.height() - y) / self.height() * (self.global_max - self.global_min))
+        return self.global_min + ((self.__candle_chart_height() - y) / self.__candle_chart_height() * (self.global_max - self.global_min))
 
     def convert_price_to_y(self, price: float) -> int:
-        return self.height() - int(((price - self.global_min) / (self.global_max - self.global_min)) * self.height())
+        return self.__candle_chart_height() - int(((price - self.global_min) / (self.global_max - self.global_min)) * self.__candle_chart_height())
 
     def paintEvent(self, event):
         painter = QPainter(self)
@@ -191,19 +207,22 @@ class CandleChart(QtWidgets.QWidget):
         upper_bands = [can.upper_band for can in cans if can.upper_band != 0]
         return max(highs + upper_bands)
 
-    def draw_vertical_gridlines(self, painter: QPainter, index: int, x1: int):
+    def draw_vertical_gridlines(self, painter: QPainter, index: int):
         if not self.draw_gridlines:
             return
         # draw grid lines
-        if (index + int(self.num_candles_on_screen() / (2 * self.num_vertical_gridlines))) % int(self.num_candles_on_screen() / self.num_vertical_gridlines) == 0:
+        if index + self.first_candle in self.gridline_candles:
+            print(self.gridline_candles[:10], index)
             painter.setPen(QPen(StyleInfo.color_grid_line, StyleInfo.pen_width, Qt.SolidLine))
-            painter.drawLine(x1, 0, x1, self.height())
+            x = self.__get_x_for_candle_index(index)
+            painter.drawLine(x, 0, x, self.__candle_chart_height())
+            self.__draw_dates_for_vertical_gridlines(painter, index)
 
     def draw_background(self, painter):
         #  draw background
         painter.setPen(QPen(StyleInfo.color_background, StyleInfo.pen_width, Qt.SolidLine))
         painter.setBrush(QBrush(StyleInfo.color_background, Qt.SolidPattern))
-        painter.drawRect(0, 0, self.__candle_chart_width(), self.height())
+        painter.drawRect(0, 0, self.__candle_chart_width(), self.__candle_chart_height())
 
     def __get_x_for_candle_index(self, index: int) -> int:
         return int((index * self.candle_width) + (self.candle_width / 2))
@@ -233,13 +252,13 @@ class CandleChart(QtWidgets.QWidget):
         # if strategy has run and candle is bought or sold
         if self.strategy_data_visible:
             if curr_candle.bought:
-                painter.setPen(QPen(QColor(0, 0, 0, 0), 0, Qt.SolidLine))  # get rid of edges
+                painter.setPen(QPen(StyleInfo.color_strategy_buy, 0, Qt.NoPen))  # get rid of edges
                 painter.setBrush(QBrush(StyleInfo.color_strategy_buy, Qt.SolidPattern))
-                painter.drawRect(x, 0, w, self.height())
+                painter.drawRect(x, 0, w, self.__candle_chart_height())
             if curr_candle.sold:
-                painter.setPen(QPen(QColor(0, 0, 0, 0), 0, Qt.SolidLine))  # get rid of edges
+                painter.setPen(QPen(QColor(0, 0, 0, 0), 0, Qt.NoPen))  # get rid of edges
                 painter.setBrush(QBrush(StyleInfo.color_strategy_sell, Qt.SolidPattern))
-                painter.drawRect(x, 0, w, self.height())
+                painter.drawRect(x, 0, w, self.__candle_chart_height())
 
     def __draw_triangle(self, x: int, y: int, w: int, h: int, painter: QPainter):
         rect = QRectF(x, y, w, h)
@@ -263,7 +282,7 @@ class CandleChart(QtWidgets.QWidget):
                         f"Low: ${'{:,.2f}'.format(can.low)}, " \
                         f"Close: ${'{:,.2f}'.format(can.close)}, "
                 can_date = "Date: " + str(can_date)
-                painter.drawText(QRectF(5, 5, self.__candle_chart_width(), self.height()),
+                painter.drawText(QRectF(5, 5, self.__candle_chart_width(), self.__candle_chart_height()),
                                  Qt.AlignLeft|Qt.AlignTop,
                                  price + can_date)
 
@@ -273,7 +292,7 @@ class CandleChart(QtWidgets.QWidget):
                 if not can.green():
                     add_height = can.h
                 painter.drawLine(0, can.y + add_height, self.__candle_chart_width(), can.y + add_height)  # horiz
-                painter.drawLine(can.x + int(can.w / 2), 0, can.x + int(can.w / 2), self.height())  # vert
+                painter.drawLine(can.x + int(can.w / 2), 0, can.x + int(can.w / 2), self.__candle_chart_height())  # vert
 
     def __draw_bollinger_bands(self, painter: QPainter, prev_candle: Candle, curr_candle: Candle, i: int):
         if i == 0: return
@@ -330,40 +349,53 @@ class CandleChart(QtWidgets.QWidget):
 
     def calc_y2(self, candle: Candle) -> float:
         percent_of_screen = (candle.low - self.global_min) / (self.global_max - self.global_min)
-        pixel_height = percent_of_screen * self.height()
-        distance_from_top = self.height() - pixel_height
+        pixel_height = percent_of_screen * self.__candle_chart_height()
+        distance_from_top = self.__candle_chart_height() - pixel_height
         return distance_from_top
 
     def calc_y1(self, candle: Candle) -> float:
         percent_of_screen = (candle.high - self.global_min) / (self.global_max - self.global_min)
-        pixel_height = percent_of_screen * self.height()
-        distance_from_top = self.height() - pixel_height
+        pixel_height = percent_of_screen * self.__candle_chart_height()
+        distance_from_top = self.__candle_chart_height() - pixel_height
         return distance_from_top
 
     def calc_y(self, candle: Candle, global_max: float, global_min: float) -> float:
         candle_top = max(candle.open, candle.close)
         percent_of_screen = (candle_top - global_min) / (global_max - global_min)
-        pixel_height = percent_of_screen * self.height()
-        distance_from_top = self.height() - pixel_height
+        pixel_height = percent_of_screen * self.__candle_chart_height()
+        distance_from_top = self.__candle_chart_height() - pixel_height
         return distance_from_top
 
     def calc_candle_height(self, candle: Candle, global_max: float, global_min: float) -> float:
         h = max(candle.open, candle.close) - min(candle.open, candle.close)
         distance = global_max - global_min
         percent = h / distance
-        return percent * self.height()
+        return percent * self.__candle_chart_height()
 
     def __draw_price_gutter_prices(self, painter: QPainter):
         for i in range(self.num_prices_in_gutter):
             x = self.__candle_chart_width()
-            y = int(i * (self.height() / self.num_prices_in_gutter))
+            y = int(i * (self.__candle_chart_height() / self.num_prices_in_gutter))
             w = self.price_gutter_width
-            h = int((self.height() / self.num_prices_in_gutter))
+            h = int((self.__candle_chart_height() / self.num_prices_in_gutter))
             price = self.convert_y_to_price(int(y+(h/2)))
             painter.setPen(QPen(Qt.white, StyleInfo.pen_width, Qt.SolidLine))
             painter.drawText(QRectF(x,y,w,h),
                              Qt.AlignHCenter | Qt.AlignCenter,
                              convert_price_to_str(price))
+
+    def __draw_dates_for_vertical_gridlines(self, painter: QPainter, index: int):
+        painter.setPen(QPen(Qt.white, StyleInfo.pen_width, Qt.SolidLine))
+        can: Candle = self.candles[index + self.first_candle]
+        date_time = datetime.datetime.strptime(can.date_time[:len(can.date_time)-6], '%Y-%m-%d %H:%M:%S').strftime('%d %H:%M')
+        w = 100
+        x = self.__get_x_for_candle_index(index)
+        painter.drawText(QRectF(x - int(w/2),
+                                self.__candle_chart_height(),
+                                w,
+                                self.date_gutter_height),
+                         Qt.AlignHCenter | Qt.AlignCenter,
+                         date_time)
 
     def draw_horizontal_gridlines(self, painter: QPainter):
         if not self.draw_gridlines:
@@ -373,7 +405,7 @@ class CandleChart(QtWidgets.QWidget):
         for i in range(self.num_prices_in_gutter):
             x1 = 0
             x2 = self.__candle_chart_width()
-            y1 = int(i * (self.height() / self.num_prices_in_gutter)) + int((self.height() / self.num_prices_in_gutter) / 2)
+            y1 = int(i * (self.__candle_chart_height() / self.num_prices_in_gutter)) + int((self.__candle_chart_height() / self.num_prices_in_gutter) / 2)
             y2 = y1
             painter.drawLine(x1, y1, x2, y2)
 
@@ -384,13 +416,14 @@ class CandleChart(QtWidgets.QWidget):
         painter.setRenderHint(QPainter.HighQualityAntialiasing)
         self.draw_background(painter)
         self.draw_horizontal_gridlines(painter)
+        self.compute_vertical_gridlines()
 
         # draw candle bodies
         self.candle_width = self.__candle_chart_width() / self.num_candles_on_screen()
         for i in range(self.num_candles_on_screen()):
             curr_candle: Candle = self.candles[i + self.first_candle]
             prev_candle: Candle = self.candles[i + self.first_candle - 1]
-            self.draw_vertical_gridlines(painter, i, self.__get_x_for_candle_index(i))
+            self.draw_vertical_gridlines(painter, i)
             x1, y1, x2, y2 = self.draw_candle_wicks(painter, curr_candle, i)
             x, y, w, h = self.get_dimensions_for_curr_candle(curr_candle, i)
             self.draw_buy_sell_indicators(painter, curr_candle, x, w)

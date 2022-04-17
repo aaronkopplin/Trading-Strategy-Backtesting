@@ -65,7 +65,7 @@ class Graph(Panel):
         self.chart.strategy_run_event(account)
 
     def clear_chart(self):
-        self.chart.__clear()
+        self.chart.clear()
 
 
 

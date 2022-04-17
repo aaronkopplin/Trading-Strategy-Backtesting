@@ -19,10 +19,10 @@ def strategy_1(parameters: dict, callback: Callable):
             trade_decision = "Buy"
         if can.close > can.upper_band:
             breakout = True
-        if breakout and can.close < can.upper_band:
+        if breakout and can.close < can.sma:
             breakout = False
             trade_decision = "Sell"
-            price_at_sell = can.close
+            price_at_sell = can.sma
 
         # stop loss
         if len(account.trades) > 0 and first_trade_after_sell is not None:
