@@ -251,6 +251,11 @@ class CandleChart(QtWidgets.QWidget):
         h = int(self.calc_candle_height(curr_candle, self.global_max, self.global_min))
         return x, y, w, h
 
+    def draw_strategy_indicators(self, painter: QPainter, curr_candle: Candle, x, y, w, h):
+        if self.strategy_data_visible:
+            self.draw_sell_indicator(painter, curr_candle, x, y, w, h)
+            self.draw_buy_indicator(painter, curr_candle, x, y, w, h)
+
     def draw_buy_sell_indicators(self, painter: QPainter, curr_candle: Candle, x: int, w: int):
         # if strategy has run and candle is bought or sold
         if self.strategy_data_visible:
@@ -263,14 +268,14 @@ class CandleChart(QtWidgets.QWidget):
                 painter.setBrush(QBrush(StyleInfo.color_strategy_sell, Qt.SolidPattern))
                 painter.drawRect(x, 0, w, self.__candle_chart_height())
 
-    def __draw_triangle(self, x: int, y: int, w: int, h: int, painter: QPainter):
+    def __draw_triangle(self, x: int, y: int, w: int, h: int, painter: QPainter, color: QColor):
         rect = QRectF(x, y, w, h)
         path = QPainterPath()
         path.moveTo(rect.left() + (rect.width() / 2), rect.top())
         path.lineTo(rect.bottomLeft())
         path.lineTo(rect.bottomRight())
         path.lineTo(rect.left() + (rect.width() / 2), rect.top())
-        painter.fillPath(path, QBrush(QColor("blue")))
+        painter.fillPath(path, QBrush(color))
 
     def draw_cursor_and_price_info(self, painter: QPainter):
         if self.draw_cursor:
@@ -332,7 +337,13 @@ class CandleChart(QtWidgets.QWidget):
         # draw horizontal line where sold
         if curr_candle.sell_price != 0:
             line_height = self.convert_price_to_y(curr_candle.sell_price)
-            self.__draw_triangle(x, line_height, w, 20, painter)
+            self.__draw_triangle(x, line_height, w, 20, painter, StyleInfo.color_red_candle)
+
+    def draw_buy_indicator(self, painter: QPainter, curr_candle: Candle, x, y, w, h):
+        # draw horizontal line where sold
+        if curr_candle.bought_price != 0:
+            line_height = self.convert_price_to_y(curr_candle.bought_price)
+            self.__draw_triangle(x, line_height, w, 20, painter, StyleInfo.color_green_candle)
 
     def draw_candle_bodies(self, painter: QPainter, curr_candle: Candle, x, y, w, h):
         # draw candle bodies
@@ -428,11 +439,8 @@ class CandleChart(QtWidgets.QWidget):
             self.draw_vertical_gridlines(painter, i)
             self.draw_candle_wicks(painter, curr_candle, i)
             x, y, w, h = self.get_dimensions_for_curr_candle(curr_candle, i)
-            self.draw_buy_sell_indicators(painter, curr_candle, x, w)
             self.draw_candle_bodies(painter, curr_candle, x, y, w, h)
-            self.draw_sell_indicator(painter, curr_candle, x, y, w, h)
-
-            # draw bollinger bands
+            self.draw_strategy_indicators(painter, curr_candle, x, y, w, h)
             self.__draw_bollinger_bands(painter, prev_candle, curr_candle, i)
 
         self.draw_cursor_and_price_info(painter)

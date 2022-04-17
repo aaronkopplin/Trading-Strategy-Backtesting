@@ -18,8 +18,15 @@ class Candle:
         self.bought: bool = False
         self.sold: bool = False
         self.sell_price = 0
+        self.bought_price = 0
         self.local_min = False
         self.local_max = False
 
     def green(self):
         return self.open < self.close
+
+    def set_bought_price(self, price: float):
+        self.bought_price = price
+
+    def set_sell_price(self, price: float):
+        self.sell_price = price

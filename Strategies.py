@@ -1,6 +1,7 @@
 from typing import Callable
 from Account import Account
 from Strategy import Strategy
+from Candle import Candle
 from Trade import Trade
 
 
@@ -14,7 +15,7 @@ def strategy_1(parameters: dict, callback: Callable):
     for i in range(2, len(candles)):
         trade_decision = ""
         prev_can = candles[i-1]
-        can = candles[i]
+        can: Candle = candles[i]
         if can.open < can.lower_band and can.close < can.lower_band:
             trade_decision = "Buy"
         if can.close > can.upper_band:
@@ -33,6 +34,7 @@ def strategy_1(parameters: dict, callback: Callable):
         if trade_decision == "Buy":
             amount = account.usd_balance * percent_per_trade
             account.buy(can.close, amount, i)
+            can.set_bought_price(can.close)
             if percent_per_trade < .1:
                 percent_per_trade += .00
             if first_trade_after_sell is None:
@@ -42,7 +44,7 @@ def strategy_1(parameters: dict, callback: Callable):
             percent_per_trade = .05
             first_trade_after_sell = None
             if success:
-                can.sell_price = price_at_sell
+                can.set_sell_price(price_at_sell)
 
         account.store_account_value(can.close)
 
