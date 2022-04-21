@@ -57,7 +57,7 @@ class LineChart(Panel):
     def chart_height(self) -> int:
         return self.height() - self.x_axis_height
 
-    def draw_bollinger_bands(self, visible: bool):
+    def set_draw_bollinger_bands(self, visible: bool):
         self.draw_boll_bands = visible
         self.update()
 
@@ -213,9 +213,9 @@ class LineChart(Panel):
         # draw grid lines
         if index + self.first_index in self.gridline_datapoints:
             painter.setPen(QPen(StyleInfo.color_grid_line, StyleInfo.pen_width, Qt.SolidLine))
-            x = self.__get_x_for_candle_index(index)
+            x = self.get_x_for_datapoint(index)
             painter.drawLine(x, 0, x, self.chart_height())
-            self.__draw_dates_for_vertical_gridlines(painter, index)
+            self.draw_dates_for_vertical_gridlines(painter, index)
 
     def draw_background(self, painter):
         #  draw background
@@ -225,12 +225,12 @@ class LineChart(Panel):
 
         # returns the x value for the middle of the candle
 
-    def __get_x_for_candle_index(self, index: int) -> int:
+    def get_x_for_datapoint(self, index: int) -> int:
         return int((index * self.datapoint_width) + (self.datapoint_width / 2))
 
     def draw_candle_wicks(self, painter: QPainter, curr_candle: Candle, index: int):
         # draw wicks
-        x = self.__get_x_for_candle_index(index)
+        x = self.get_x_for_datapoint(index)
         y1 = int(self.calc_y1(curr_candle))
         y2 = int(self.calc_y2(curr_candle))
         if curr_candle.close >= curr_candle.open:
@@ -264,7 +264,7 @@ class LineChart(Panel):
                 painter.setBrush(QBrush(StyleInfo.color_strategy_sell, Qt.SolidPattern))
                 painter.drawRect(x, 0, w, self.chart_height())
 
-    def __draw_triangle(self, x: int, y: int, w: int, h: int, painter: QPainter, color: QColor):
+    def draw_triangle(self, x: int, y: int, w: int, h: int, painter: QPainter, color: QColor):
         rect = QRectF(x, y, w, h)
         path = QPainterPath()
         path.moveTo(rect.left() + (rect.width() / 2), rect.top())
@@ -298,7 +298,7 @@ class LineChart(Panel):
                 painter.drawLine(0, can.y + add_height, self.chart_width(), can.y + add_height)  # horiz
                 painter.drawLine(can.x + int(can.w / 2), 0, can.x + int(can.w / 2), self.chart_height())  # vert
 
-    def __draw_bollinger_bands(self, painter: QPainter, prev_candle: Candle, curr_candle: Candle, i: int):
+    def draw_bollinger_bands(self, painter: QPainter, prev_candle: Candle, curr_candle: Candle, i: int):
         if i == 0: return
         if not self.draw_boll_bands: return
 
@@ -333,13 +333,13 @@ class LineChart(Panel):
         # draw horizontal line where sold
         if curr_candle.sell_price != 0:
             line_height = self.convert_price_to_y(curr_candle.sell_price)
-            self.__draw_triangle(x, line_height, w, 20, painter, StyleInfo.color_red_candle)
+            self.draw_triangle(x, line_height, w, 20, painter, StyleInfo.color_red_candle)
 
     def draw_buy_indicator(self, painter: QPainter, curr_candle: Candle, x, y, w, h):
         # draw horizontal line where sold
         if curr_candle.bought_price != 0:
             line_height = self.convert_price_to_y(curr_candle.bought_price)
-            self.__draw_triangle(x, line_height, w, 20, painter, StyleInfo.color_green_candle)
+            self.draw_triangle(x, line_height, w, 20, painter, StyleInfo.color_green_candle)
 
     def draw_candle_bodies(self, painter: QPainter, curr_candle: Candle, x, y, w, h):
         # draw candle bodies
@@ -382,7 +382,7 @@ class LineChart(Panel):
         percent = h / distance
         return percent * self.chart_height()
 
-    def __draw_price_gutter_prices(self, painter: QPainter):
+    def draw_y_axis_labels(self, painter: QPainter):
         for i in range(self.num_labels_on_y_axis):
             x = self.chart_width()
             y = int(i * (self.chart_height() / self.num_labels_on_y_axis))
@@ -394,13 +394,13 @@ class LineChart(Panel):
                              Qt.AlignHCenter | Qt.AlignCenter,
                              convert_price_to_str(price))
 
-    def __draw_dates_for_vertical_gridlines(self, painter: QPainter, index: int):
+    def draw_dates_for_vertical_gridlines(self, painter: QPainter, index: int):
         painter.setPen(QPen(Qt.white, StyleInfo.pen_width, Qt.SolidLine))
         can: Candle = self.data[index + self.first_index]
         date_time = datetime.datetime.strptime(can.date_time[:len(can.date_time) - 6], '%Y-%m-%d %H:%M:%S').strftime(
             '%d %H:%M')
         w = 100
-        x = self.__get_x_for_candle_index(index)
+        x = self.get_x_for_datapoint(index)
         painter.drawText(QRectF(x - int(w / 2),
                                 self.chart_height(),
                                 w,
@@ -439,10 +439,10 @@ class LineChart(Panel):
             x, y, w, h = self.get_dimensions_for_curr_candle(curr_candle, i)
             self.draw_candle_bodies(painter, curr_candle, x, y, w, h)
             self.draw_strategy_indicators(painter, curr_candle, x, y, w, h)
-            self.__draw_bollinger_bands(painter, prev_candle, curr_candle, i)
+            self.draw_bollinger_bands(painter, prev_candle, curr_candle, i)
 
         self.draw_cursor_and_price_info(painter)
-        self.__draw_price_gutter_prices(painter)
+        self.draw_y_axis_labels(painter)
 
 
 

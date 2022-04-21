@@ -40,7 +40,7 @@ class Graph(Panel):
         self.chart.trend_indicator_check_checkchanged(self.trend_indicator_check.isChecked())
 
     def draw_bollinger_bands(self):
-        self.chart.draw_bollinger_bands(self.bollinger_bands_check.isChecked())
+        self.chart.set_draw_bollinger_bands(self.bollinger_bands_check.isChecked())
 
     def find_local_mins_and_maxes(self):
         can: Candle
