@@ -11,7 +11,7 @@ from Bollinger import *
 def read_candles():
     results = []
     candles = []
-    with open("data.csv") as file:
+    with open("Data/data.csv") as file:
         reader = csv.reader(file)
         for row in reader:
             results.append(row)

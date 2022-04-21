@@ -4,7 +4,7 @@ from Candle import Candle
 from Strategy import Strategy
 from Strategies import *
 import StyleInfo
-from Controls.Graph import Graph
+from Controls.LineChart import LineChart
 from Controls.Panel import *
 from Controls.Button import Button
 from PyQt5.QtCore import Qt
@@ -52,7 +52,6 @@ class InfoPanel(Panel):
     def clear_graph(self):
         self.graph.clear_chart()
         self.output.setPlainText("")
-        self.performance_graph.clear_graph()
         self.statistics.setPlainText("")
 
     def add_parameters(self):
@@ -64,7 +63,6 @@ class InfoPanel(Panel):
         self.tabs.setContentsMargins(0, 0, 0, 0)
         self.add_output()
         self.add_widget(self.tabs)
-        self.add_performance()
         self.add_statistics()
 
     def add_statistics(self):
@@ -86,10 +84,6 @@ class InfoPanel(Panel):
                                    """)
         self.tabs.addTab(self.output, "OUTPUT")
 
-    def add_performance(self):
-        self.performance_graph = Graph()
-        self.tabs.addTab(self.performance_graph, "PERFORMANCE")
-
     def add_strategy_buttons(self):
         for strategy in strategies:
             parameters = {
@@ -109,7 +103,6 @@ class InfoPanel(Panel):
         log_str = "\n".join([log for log in logs])
         ending_account_val = account.account_value(self.candles[len(self.candles) - 1].close)
         self.output.setPlainText(log_str)
-        self.performance_graph.set_data(account.account_values)
         self.compute_statistics(account)
 
     def format_val(self, val: float):

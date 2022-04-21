@@ -23,6 +23,7 @@ class Graph(Panel):
 
         self.timeframe_panel = TimeframePanel(self.chart)
         self.timeframe_panel.setFixedHeight(40)
+        self.timeframe_panel.submit_event = self.submit_event
         self.add_widget(self.timeframe_panel)
 
         self.chart_options = Panel()
@@ -37,6 +38,9 @@ class Graph(Panel):
         self.add_widget(self.chart_options)
 
         self.add_widget(self.chart)
+
+    def submit_event(self):
+        self.chart.refresh_data()
 
     def trend_indicator_check_checkchanged(self):
         self.chart.trend_indicator_check_checkchanged(self.trend_indicator_check.isChecked())
@@ -59,7 +63,6 @@ class Graph(Panel):
 
     def detect_trends(self):
         self.find_local_mins_and_maxes()
-
 
     def strategy_run_event(self, account: Account):
         self.chart.strategy_run_event(account)

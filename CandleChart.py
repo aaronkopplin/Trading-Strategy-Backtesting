@@ -22,7 +22,6 @@ class CandleChart(QtWidgets.QWidget):
         super().__init__()
         self.price_gutter_width = 100
         self.date_gutter_height = 30
-        self.ticker_symbol = "BTC-USD"
         self.setContentsMargins(0, 0, 0, 0)
         self.candles = candles
         self.last_candle = len(self.candles)
@@ -85,23 +84,11 @@ class CandleChart(QtWidgets.QWidget):
     def num_candles_on_screen(self):
         return self.last_candle - self.first_candle
 
-    def run_query(self, begin: QDateTime, end: QDateTime, interval: str):
-        start = f"{begin.date().year()}-{begin.date().month()}-{begin.date().day()}"
-        end = f"{end.date().year()}-{end.date().month()}-{end.date().day()}"
-        data = yfinance.download([self.ticker_symbol],
-                                 start=start,
-                                 end=end,
-                                 interval=interval)
-        if len(data) > 1:
-            data.to_csv("data.csv")
-            with open("last_query.csv", "w") as f:
-                f.write("ticker_symbol,begin,end,interval\n")
-                f.write(f"{self.ticker_symbol},{start},{end},{interval}")
-
-            self.candles = read_candles()
-            self.last_candle = len(self.candles)
-            self.first_candle = self.last_candle - self.min_zoom()
-            self.update()
+    def refresh_data(self):
+        self.candles = read_candles()
+        self.last_candle = len(self.candles)
+        self.first_candle = self.last_candle - self.min_zoom()
+        self.update()
 
     def mousePressEvent(self, a0: QtGui.QMouseEvent) -> None:
         self.mouse_prev_location = a0.x()
@@ -445,5 +432,4 @@ class CandleChart(QtWidgets.QWidget):
 
         self.draw_cursor_and_price_info(painter)
         self.__draw_price_gutter_prices(painter)
-        print(self.global_min, self.global_max)
 

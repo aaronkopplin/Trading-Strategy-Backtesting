@@ -15,3 +15,6 @@ class TextInputWithLabel(Panel):
 
     def get_text(self) -> str:
         return self.text_input.text()
+
+    def set_text(self, text: str):
+        self.text_input.setText(text)
