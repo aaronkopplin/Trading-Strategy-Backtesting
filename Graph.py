@@ -1,17 +1,11 @@
-import csv
-from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import *
-from PyQt5.QtCore import *
-from datetime import date, timedelta
-from datetime import datetime
 
 from Candle import Candle
-from CandleChart import CandleChart
-from Strategy import Account, Trade
+from Controls.CandleChart import CandleChart
+from Strategy import Account
 from TimeframePanel import TimeframePanel
 from Controls.Panel import Panel
 from Controls.LayoutDirection import LayoutDirection
-from Controls.Splitter import Splitter
 
 
 class Graph(Panel):

@@ -1,10 +1,9 @@
 import csv
-from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from datetime import date, timedelta
 from datetime import datetime
-from CandleChart import CandleChart
+from Controls.CandleChart import CandleChart
 from Controls.Button import Button
 import yfinance
 from Controls.Panel import Panel
