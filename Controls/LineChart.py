@@ -39,6 +39,12 @@ class LineChart(Panel):
         self.draw_y_axis = False
         self.change_first_index_event = None
         self.change_last_index_event = None
+        self.num_horizontal_gridlines = 8
+        self.gridline_datapoints: list[int] = []
+        self.__draw_gridlines = True
+
+    def set_draw_gridlines(self, draw: bool):
+        self.__draw_gridlines = draw
 
     def set_draw_y_axis(self, draw: bool):
         self.draw_y_axis = draw
@@ -87,8 +93,11 @@ class LineChart(Panel):
         else:
             self.first_index -= 1
         self.recalc_min_and_max()
+        self.recalc_gridline_indexes()
+
         if self.change_first_index_event is not None:
             self.change_first_index_event(increment)
+
 
     def change_last_index(self, increment: bool):
         if increment:
@@ -96,6 +105,8 @@ class LineChart(Panel):
         else:
             self.last_index -= 1
         self.recalc_min_and_max()
+        self.recalc_gridline_indexes()
+
         if self.change_last_index_event is not None:
             self.change_last_index_event(increment)
 
@@ -116,6 +127,7 @@ class LineChart(Panel):
                     self.change_first_index(True)
                 if self.last_index > 1:
                     self.change_last_index(False)
+                self.recalc_gridline_indexes()
 
     def datapoint_width(self):
         num_points = self.last_index - self.first_index - 1
@@ -204,11 +216,53 @@ class LineChart(Panel):
         y2 = self.get_y_for_datapoint(second)
         self.painter.drawLine(x1, y1, x2, y2)
 
-    @overrides
-    def draw_objects(self):
+    def draw_axis_labels(self):
+        self.painter.setPen(QPen(QColor(255, 255, 255), .05, Qt.SolidLine))
+
+    def recalc_gridline_indexes(self):
+        if self.__draw_gridlines:
+            self.gridline_datapoints = []
+            if self.num_datapoints_on_screen() < 50:
+                dist_between_indexes = int(self.num_datapoints_on_screen() / 4)
+            else:
+                dist_between_indexes = int(self.num_datapoints_on_screen() / 8)
+            if dist_between_indexes != 0:
+                for i in range(self.dataset.collection_length()):
+                    if i % dist_between_indexes == 0:
+                        self.gridline_datapoints.append(i)
+
+    def draw_vertical_gridlines(self):
+        if self.__draw_gridlines:
+            self.painter.setPen(QPen(StyleInfo.color_grid_line, StyleInfo.gridline_width, Qt.SolidLine))
+            for index in self.gridline_datapoints:
+                if self.first_index < index < self.last_index:
+                    x = self.get_x_for_datapoint(index)
+                    self.painter.drawLine(x, 0, x, self.chart_height())
+                    # self.draw_dates_for_vertical_gridlines(self.painter, index)
+
+    def draw_horizontal_gridlines(self):
+        if self.__draw_gridlines:
+            self.painter.setPen(QPen(StyleInfo.color_grid_line, StyleInfo.gridline_width, Qt.SolidLine))
+            num_labels_on_y_axis = self.num_horizontal_gridlines
+            for i in range(int(num_labels_on_y_axis)):
+                x1 = 0
+                x2 = self.chart_width()
+                y1 = int(i * (self.chart_height() / num_labels_on_y_axis)) + int(
+                    (self.chart_height() / num_labels_on_y_axis) / 2)
+                y2 = y1
+                self.painter.drawLine(x1, y1, x2, y2)
+
+    def draw_collections(self):
         collection: Collection
         for collection in self.dataset.collections():
             if len(collection) > 0:
                 for i in range(self.first_index, self.last_index - 1):
                     self.draw_datapoint(i, collection)
-                    self.draw_mouse_cursor()
+
+    @overrides
+    def draw_objects(self):
+        self.draw_horizontal_gridlines()
+        self.draw_vertical_gridlines()
+        self.draw_collections()
+        self.draw_axis_labels()
+        self.draw_mouse_cursor()

@@ -16,6 +16,7 @@ color_strategy_buy = QColor(204, 255, 179, 50)
 color_strategy_sell = QColor(255, 179, 179, 50)
 
 pen_width = 1
+gridline_width = .5
 num_candles_per_grid_line = 5
 num_horizontal_gridlines = 20
 font_size = 16

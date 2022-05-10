@@ -61,8 +61,15 @@ class CandleChart(LineChart):
 
         self.painter.drawRect(x, y, w, h)
 
-    @overrides
-    def draw_objects(self):
+    def draw_candles(self):
         for i in range(self.first_index, self.last_index ):
             self.draw_candle(i)
-        super().draw_objects()
+
+    @overrides
+    def draw_objects(self):
+        self.draw_horizontal_gridlines()
+        self.draw_vertical_gridlines()
+        self.draw_candles()
+        self.draw_collections()
+        self.draw_axis_labels()
+        self.draw_mouse_cursor()
