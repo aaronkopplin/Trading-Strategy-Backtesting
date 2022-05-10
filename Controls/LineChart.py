@@ -20,7 +20,7 @@ class LineChart(Panel):
             raise ValueError("Cannot have empty dataset")
         self.dataset = DataSet(data, rgba)
         self.min_datapoints_on_screen = 2
-        self.max_datapoints_on_screen = 500
+        self.max_datapoints_on_screen = 300
         self.last_index = len(data) - 1
         self.first_index = self.last_index - 2
         self.mouse_prev_x = None
@@ -200,8 +200,7 @@ class LineChart(Panel):
 
         self.__mouse_x = a0.x()
         self.__mouse_y = a0.y()
-        if self.mouse_draw_event is not None:
-            self.mouse_draw_event(self.__mouse_x, self.__mouse_y)
+
         self.update()
 
     def draw_mouse_cursor(self):
@@ -305,6 +304,14 @@ class LineChart(Panel):
     def convert_y_to_value(self, y: float):
         return self.min_value_on_screen + ((self.chart_height() - y) / self.chart_height() * (self.max_value_on_screen - self.min_value_on_screen))
 
+    def draw_y_axis_label(self, y: int):
+        self.painter.setPen(QPen(QColor(255, 255, 255), .05, Qt.SolidLine))
+        val = self.convert_y_to_value(y)
+        label_height = 50
+        self.painter.drawText(QRectF(self.chart_width(), y - label_height / 2, self.y_axis_width, label_height),
+                              Qt.AlignHCenter | Qt.AlignCenter,
+                              self.format_text_for_y_axis(val))
+
     def draw_horizontal_gridlines(self):
         if self.__draw_gridlines:
             num_labels_on_y_axis = self.num_horizontal_gridlines
@@ -316,13 +323,9 @@ class LineChart(Panel):
                 y2 = y1
                 self.painter.setPen(QPen(StyleInfo.color_grid_line, StyleInfo.gridline_width, Qt.SolidLine))
                 self.painter.drawLine(x1, y1, x2, y2)
+                self.draw_y_axis_label(y1)
+            self.draw_y_axis_label(self.__mouse_y)
 
-                self.painter.setPen(QPen(QColor(255, 255, 255), .05, Qt.SolidLine))
-                val = self.convert_y_to_value(y1)
-                label_height = 50
-                self.painter.drawText(QRectF(x2, y1 - label_height / 2, self.y_axis_width, label_height),
-                             Qt.AlignHCenter | Qt.AlignCenter,
-                             self.format_text_for_y_axis(val))
 
     def draw_collections(self):
         collection: Collection
