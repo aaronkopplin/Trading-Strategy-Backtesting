@@ -10,6 +10,7 @@ from DataClasses.DataSet import DataSet
 from DataClasses.RGBA import RGBA
 from DataClasses.Collection import Collection
 from overrides import overrides
+from PyQt5 import QtWidgets, QtCore
 
 
 class LineChart(Panel):
@@ -24,8 +25,8 @@ class LineChart(Panel):
         self.first_index = self.last_index - 2
         self.mouse_prev_x = None
         self.mouse_click_index = 0
-        self.mouse_x = 0
-        self.mouse_y = 0
+        self.__mouse_x = 0
+        self.__mouse_y = 0
         self.min_value_on_screen = 0
         self.max_value_on_screen = 0
         self.recalc_min_and_max()
@@ -35,9 +36,40 @@ class LineChart(Panel):
         self.draw_y_axis = False
         self.change_first_index_event = None
         self.change_last_index_event = None
+        self.mouse_draw_event = None
         self.num_horizontal_gridlines = 8
         self.gridline_datapoints: list[int] = []
         self.__draw_gridlines = True
+        self.__draw__vertical_cursor = True
+        self.__draw__horizontal_cursor = True
+        self.mouse_enter_event = None
+        self.mouse_leave_event = None
+
+    @overrides
+    def enterEvent(self, a0: QtCore.QEvent) -> None:
+        super().enterEvent(a0)
+        self.set_draw_vertical_cursor(True)
+        self.set_draw_horizontal_cursor(True)
+        if self.mouse_enter_event is not None:
+            self.mouse_enter_event()
+
+    @overrides
+    def leaveEvent(self, a0: QtCore.QEvent) -> None:
+        super(LineChart, self).leaveEvent(a0)
+        self.set_draw_vertical_cursor(False)
+        self.set_draw_horizontal_cursor(False)
+        if self.mouse_leave_event is not None:
+            self.mouse_leave_event()
+
+    def set_draw_vertical_cursor(self, draw: bool):
+        self.__draw__vertical_cursor = draw
+
+    def set_draw_horizontal_cursor(self, draw: bool):
+        self.__draw__horizontal_cursor = draw
+
+    def set_mouse_x(self, x: int):
+        self.__mouse_x = x
+        self.update()
 
     def set_draw_gridlines(self, draw: bool):
         self.__draw_gridlines = draw
@@ -94,12 +126,12 @@ class LineChart(Panel):
         if self.change_first_index_event is not None:
             self.change_first_index_event(increment)
 
-
     def change_last_index(self, increment: bool):
         if increment:
             self.last_index += 1
         else:
             self.last_index -= 1
+        self.recalc_min_and_max()
         self.recalc_min_and_max()
         self.recalc_gridline_indexes()
 
@@ -162,27 +194,41 @@ class LineChart(Panel):
                 self.move_left(self.mouse_click_index - curr_index)
                 self.mouse_click_index = curr_index
 
-        self.mouse_x = a0.x()
-        self.mouse_y = a0.y()
+        self.__mouse_x = a0.x()
+        self.__mouse_y = a0.y()
+        if self.mouse_draw_event is not None:
+            self.mouse_draw_event(self.__mouse_x, self.__mouse_y)
         self.update()
 
     def draw_mouse_cursor(self):
-        if not self.mouse_entered or self.mouse_x > self.chart_width() or self.mouse_y > self.chart_height():
+        if self.__draw__vertical_cursor:
+            self.draw_vertical_mouse_line(self.__mouse_x)
+        if self.__draw__horizontal_cursor:
+            self.draw_horizontal_mouse_line(self.__mouse_y)
+
+    def draw_horizontal_mouse_line(self, y: int):
+        if self.__mouse_x > self.chart_width():
             return
         self.painter.setPen(QPen(StyleInfo.color_cursor, StyleInfo.pen_width, Qt.DashLine))
         # draw horizontal line
         x1 = 0
         x2 = self.chart_width()
-        y1 = self.mouse_y
-        y2 = self.mouse_y
-        self.painter.drawLine(x1, y1, x2, y2)
+        self.painter.drawLine(x1, y, x2, y)
+        if self.mouse_draw_event is not None:
+            self.mouse_draw_event(self.__mouse_x, self.__mouse_y)
+        self.update()
 
-        # draw vertical line
-        x1 = self.mouse_x
-        x2 = self.mouse_x
+    def draw_vertical_mouse_line(self, x: int):
+        if self.__mouse_y > self.chart_height():
+            return
+        self.painter.setPen(QPen(StyleInfo.color_cursor, StyleInfo.pen_width, Qt.DashLine))
+
         y1 = 0
         y2 = self.chart_height()
-        self.painter.drawLine(x1, y1, x2, y2)
+        self.painter.drawLine(x, y1, x, y2)
+        if self.mouse_draw_event is not None:
+            self.mouse_draw_event(self.__mouse_x, self.__mouse_y)
+        self.update()
 
     def add_collection(self, data: list[float], rgb: RGBA):
         self.dataset.add_collection(data, rgb)

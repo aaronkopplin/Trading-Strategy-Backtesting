@@ -44,15 +44,52 @@ class ChartAndIndicator(Panel):
         self.__indicator_chart.set_draw_y_axis(True)
         self.__indicator_chart.set_draw_x_axis(True)
 
-        self.__candle_chart.change_first_index_event = self.change_fist_index_event
-        self.__candle_chart.change_last_index_event = self.change_last_index_event
+        self.__candle_chart.mouse_enter_event = self.candle_chart_mouse_enter_event
+        self.__indicator_chart.mouse_enter_event = self.indicator_chart_mouse_enter_event
 
-        self.__indicator_chart.set_handle_mouse_events(False)
+        self.__candle_chart.mouse_leave_event = self.candle_chart_mouse_leave_event
+        self.__indicator_chart.mouse_leave_event = self.indicator_chart_mouse_leave_event
 
-    def change_fist_index_event(self, increment: bool):
+    def indicator_chart_mouse_enter_event(self):
+        self.__indicator_chart.change_first_index_event = self.indicator_chart_change_fist_index_event
+        self.__indicator_chart.change_last_index_event = self.indicator_chart_change_last_index_event
+        self.__indicator_chart.mouse_draw_event = self.indicator_chart_mouse_draw_event
+
+    def indicator_chart_mouse_leave_event(self):
+        self.__indicator_chart.change_first_index_event = None
+        self.__indicator_chart.change_last_index_event = None
+        self.__indicator_chart.mouse_draw_event = None
+
+    def candle_chart_mouse_enter_event(self):
+        self.__candle_chart.change_first_index_event = self.candle_chart_change_fist_index_event
+        self.__candle_chart.change_last_index_event = self.candle_chart_change_last_index_event
+        self.__candle_chart.mouse_draw_event = self.candle_chart_mouse_draw_event
+
+    def candle_chart_mouse_leave_event(self):
+        self.__candle_chart.change_first_index_event = None
+        self.__candle_chart.change_last_index_event = None
+        self.__candle_chart.mouse_draw_event = None
+
+    def indicator_chart_mouse_draw_event(self, x: int, y: int):
+        self.__candle_chart.set_draw_vertical_cursor(True)
+        self.__candle_chart.set_draw_horizontal_cursor(False)
+        self.__candle_chart.set_mouse_x(x)
+
+    def indicator_chart_change_fist_index_event(self, increment: bool):
+        self.__candle_chart.change_first_index(increment)
+
+    def indicator_chart_change_last_index_event(self, increment: bool):
+        self.__candle_chart.change_last_index(increment)
+
+    def candle_chart_mouse_draw_event(self, x: int, y: int):
+        self.__indicator_chart.set_draw_vertical_cursor(True)
+        self.__indicator_chart.set_draw_horizontal_cursor(False)
+        self.__indicator_chart.set_mouse_x(x)
+
+    def candle_chart_change_fist_index_event(self, increment: bool):
         self.__indicator_chart.change_first_index(increment)
 
-    def change_last_index_event(self, increment: bool):
+    def candle_chart_change_last_index_event(self, increment: bool):
         self.__indicator_chart.change_last_index(increment)
 
     def candle_chart(self):

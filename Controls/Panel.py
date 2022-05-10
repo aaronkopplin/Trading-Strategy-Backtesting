@@ -12,7 +12,7 @@ from PyQt5.QtCore import Qt
 class Panel(QtWidgets.QWidget):
     def __init__(self):
         super(Panel, self).__init__()
-        self.painter: QPainter = None
+        self.painter = QPainter(self)
         self.setContentsMargins(0, 0, 0, 0)
         self.setLayout(VerticalLayout())
         self.layout().setContentsMargins(0, 0, 0, 0)
@@ -104,10 +104,9 @@ class Panel(QtWidgets.QWidget):
     def paintEvent(self, pe):
         o = QStyleOption()
         o.initFrom(self)
-        p = QPainter(self)
-        self.style().drawPrimitive(QStyle.PE_Widget, o, p, self)
+        self.style().drawPrimitive(QStyle.PE_Widget, o, self.painter, self)
 
-        self.painter = QPainter(self)
+        self.painter.begin(self)
         self.draw_background()
         self.painter.setRenderHint(QPainter.HighQualityAntialiasing)
         self.draw_objects()
