@@ -13,6 +13,10 @@ from overrides import overrides
 from DataClasses.RGBA import RGBA
 
 
+def convert_price_to_str(price: float) -> str:
+    return '${:,.0f}'.format(price)
+
+
 # handle drawing candles on top of data
 class CandleChart(LineChart):
     def __init__(self, data: list[Candle]):
@@ -64,6 +68,10 @@ class CandleChart(LineChart):
     def draw_candles(self):
         for i in range(self.first_index, self.last_index ):
             self.draw_candle(i)
+
+    @overrides
+    def format_text_for_y_axis(self, text: float):
+        return convert_price_to_str(text)
 
     @overrides
     def draw_objects(self):

@@ -12,10 +12,6 @@ from DataClasses.Collection import Collection
 from overrides import overrides
 
 
-def convert_price_to_str(price: float) -> str:
-    return '${:,.0f}'.format(price)
-
-
 class LineChart(Panel):
     def __init__(self, data: list[float], rgba: RGBA):
         super().__init__()
@@ -171,7 +167,7 @@ class LineChart(Panel):
         self.update()
 
     def draw_mouse_cursor(self):
-        if not self.mouse_entered:
+        if not self.mouse_entered or self.mouse_x > self.chart_width() or self.mouse_y > self.chart_height():
             return
         self.painter.setPen(QPen(StyleInfo.color_cursor, StyleInfo.pen_width, Qt.DashLine))
         # draw horizontal line
@@ -240,9 +236,14 @@ class LineChart(Panel):
                     self.painter.drawLine(x, 0, x, self.chart_height())
                     # self.draw_dates_for_vertical_gridlines(self.painter, index)
 
+    def format_text_for_y_axis(self, text: float):
+        return str(round(text, 2))  # override to change the format for the y axis labels
+
+    def convert_y_to_value(self, y: float):
+        return self.min_value_on_screen + ((self.chart_height() - y) / self.chart_height() * (self.max_value_on_screen - self.min_value_on_screen))
+
     def draw_horizontal_gridlines(self):
         if self.__draw_gridlines:
-            self.painter.setPen(QPen(StyleInfo.color_grid_line, StyleInfo.gridline_width, Qt.SolidLine))
             num_labels_on_y_axis = self.num_horizontal_gridlines
             for i in range(int(num_labels_on_y_axis)):
                 x1 = 0
@@ -250,7 +251,15 @@ class LineChart(Panel):
                 y1 = int(i * (self.chart_height() / num_labels_on_y_axis)) + int(
                     (self.chart_height() / num_labels_on_y_axis) / 2)
                 y2 = y1
+                self.painter.setPen(QPen(StyleInfo.color_grid_line, StyleInfo.gridline_width, Qt.SolidLine))
                 self.painter.drawLine(x1, y1, x2, y2)
+
+                self.painter.setPen(QPen(QColor(255, 255, 255), .05, Qt.SolidLine))
+                val = self.convert_y_to_value(y1)
+                label_height = 50
+                self.painter.drawText(QRectF(x2, y1 - label_height / 2, self.y_axis_width, label_height),
+                             Qt.AlignHCenter | Qt.AlignCenter,
+                             self.format_text_for_y_axis(val))
 
     def draw_collections(self):
         collection: Collection

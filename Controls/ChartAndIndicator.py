@@ -30,7 +30,7 @@ class ChartAndIndicator(Panel):
             high.append(can.high())
         self.__indicator_chart.add_collection(high, RGBA(0, 255, 0, 255))
 
-        self.__indicator_chart.set_draw_gridlines(False)
+        # self.__indicator_chart.set_draw_gridlines(False)
 
         self.splitter = Splitter(LayoutDirection.VERTICAL)
         self.add_widget(self.splitter)
