@@ -1,5 +1,5 @@
 from Controls.Button import Button
-from Strategy import Strategy
+from DataClasses.Strategy import Strategy
 from typing import Callable
 
 

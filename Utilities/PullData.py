@@ -1,7 +1,6 @@
-import yfinance
 import csv
-from Candle import Candle
-from Bollinger import *
+from DataClasses.Candle import Candle
+from Utilities.Bollinger import *
 
 #
 # data = yfinance.download(["BTC-USD"], start="2021-11-11", end="2021-11-18", interval="1h")
@@ -11,7 +10,7 @@ from Bollinger import *
 def read_candles():
     results = []
     candles = []
-    with open("Data/data.csv") as file:
+    with open("./Data/data.csv") as file:
         reader = csv.reader(file)
         for row in reader:
             results.append(row)

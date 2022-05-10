@@ -71,7 +71,7 @@ class TimeframePanel(Panel):
 
         if len(data) > 1:
             data.to_csv("Data/data.csv")
-            with open("Data/last_query.csv", "w") as f:
+            with open("../Data/last_query.csv", "w") as f:
                 f.write("ticker_symbol,begin,end,interval\n")
                 f.write(f"{ticker},{start},{end},{interval}")
 
@@ -79,7 +79,7 @@ class TimeframePanel(Panel):
 
     def load_parameters(self):
         data = []
-        with open("Data/last_query.csv") as file:
+        with open("../Data/last_query.csv") as file:
             reader = csv.reader(file)
             for row in reader:
                 data.append(row)

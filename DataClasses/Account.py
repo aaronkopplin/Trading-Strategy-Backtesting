@@ -1,4 +1,4 @@
-from Trade import Trade
+from DataClasses.Trade import Trade
 
 
 class Account:

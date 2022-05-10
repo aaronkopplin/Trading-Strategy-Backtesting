@@ -1,16 +1,10 @@
-from PullData import read_candles
-from PyQt5.QtWidgets import QApplication, QMainWindow
+from Utilities.PullData import read_candles
+from PyQt5.QtWidgets import QApplication
 import sys
-from Window import Window
-
-
-def open_application(candles: list):
-    App = QApplication(sys.argv)
-    window = Window(candles)
-    sys.exit(App.exec())
-
+from Controls.Window import Window
 
 candles = read_candles()
-
-open_application(candles)
+App = QApplication(sys.argv)
+window = Window(candles)
+sys.exit(App.exec())
 
