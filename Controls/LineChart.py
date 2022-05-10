@@ -31,7 +31,7 @@ class LineChart(Panel):
         self.max_value_on_screen = 0
         self.recalc_min_and_max()
         self.y_axis_width = 80
-        self.x_axis_height = 50
+        self.x_axis_height = 40
         self.draw_x_axis = False
         self.draw_y_axis = False
         self.change_first_index_event = None
@@ -44,6 +44,10 @@ class LineChart(Panel):
         self.__draw__horizontal_cursor = True
         self.mouse_enter_event = None
         self.mouse_leave_event = None
+        self._x_axis_labels: list[str] = None
+
+    def set_x_axis_labels(self, labels: list[str]):
+        self._x_axis_labels = labels
 
     @overrides
     def enterEvent(self, a0: QtCore.QEvent) -> None:
@@ -207,7 +211,7 @@ class LineChart(Panel):
             self.draw_horizontal_mouse_line(self.__mouse_y)
 
     def draw_horizontal_mouse_line(self, y: int):
-        if self.__mouse_x > self.chart_width():
+        if self.__mouse_x > self.chart_width() or self.__mouse_y > self.chart_height():
             return
         self.painter.setPen(QPen(StyleInfo.color_cursor, StyleInfo.pen_width, Qt.DashLine))
         # draw horizontal line
@@ -219,7 +223,7 @@ class LineChart(Panel):
         self.update()
 
     def draw_vertical_mouse_line(self, x: int):
-        if self.__mouse_y > self.chart_height():
+        if self.__mouse_x > self.chart_width() or self.__mouse_y > self.chart_height():
             return
         self.painter.setPen(QPen(StyleInfo.color_cursor, StyleInfo.pen_width, Qt.DashLine))
 
@@ -280,9 +284,22 @@ class LineChart(Panel):
                 if self.first_index < index < self.last_index:
                     x = self.get_x_for_datapoint(index)
                     self.painter.drawLine(x, 0, x, self.chart_height())
-                    # self.draw_dates_for_vertical_gridlines(self.painter, index)
 
-    def format_text_for_y_axis(self, text: float):
+                    # find x axis value
+                    self.painter.setPen(QPen(QColor(255, 255, 255), .05, Qt.SolidLine))
+                    display_val = self.format_text_for_x_axis(index)
+                    label_width = 100
+                    self.painter.drawText(QRectF(x - int(label_width / 2),
+                                                 self.chart_height(),
+                                                 label_width,
+                                                 self.x_axis_height), Qt.AlignHCenter | Qt.AlignCenter, display_val)
+
+    def format_text_for_x_axis(self, index: int) -> str:
+        if self._x_axis_labels is not None:
+            return self._x_axis_labels[index]
+        return str(index)
+
+    def format_text_for_y_axis(self, text: float) -> str:
         return str(round(text, 2))  # override to change the format for the y axis labels
 
     def convert_y_to_value(self, y: float):

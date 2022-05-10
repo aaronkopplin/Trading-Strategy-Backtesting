@@ -1,19 +1,10 @@
-from PyQt5.QtGui import QBrush, QPen
-from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QPainter
-from PyQt5.QtGui import *
-from PyQt5.QtCore import *
-import StyleInfo
 from Controls.Panel import Panel
-from DataClasses.DataSet import DataSet
-from DataClasses.Account import Account
-from Controls.LineChart import LineChart
 from DataClasses.Candle import Candle
 from Controls.CandleChart import CandleChart, LineChart
-from overrides import overrides
 from DataClasses.RGBA import RGBA
 from Controls.Splitter import Splitter
 from Controls.LayoutDirection import LayoutDirection
+from Controls.IndicatorChart import IndicatorChart
 
 
 class ChartAndIndicator(Panel):
@@ -23,14 +14,17 @@ class ChartAndIndicator(Panel):
         low: list[float] = []
         for can in data:
             low.append(can.low())
-        self.__indicator_chart = LineChart(low, RGBA(255, 0, 0, 255))
+        self.__indicator_chart = IndicatorChart(low, RGBA(255, 0, 0, 255))
 
         high: list[float] = []
         for can in data:
             high.append(can.high())
         self.__indicator_chart.add_collection(high, RGBA(0, 255, 0, 255))
 
-        # self.__indicator_chart.set_draw_gridlines(False)
+        labels = []
+        for can in data:
+            labels.append(can.date_time())
+        self.__indicator_chart.set_x_axis_labels(labels)
 
         self.splitter = Splitter(LayoutDirection.VERTICAL)
         self.add_widget(self.splitter)

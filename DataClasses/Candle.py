@@ -9,6 +9,9 @@ class Candle:
         self.__volume = float(vals[6])
         self.__percent = ((self.__close - self.__open) / self.__open) * 100
 
+    def date_time(self):
+        return self.__date_time
+
     def open(self):
         return self.__open
 

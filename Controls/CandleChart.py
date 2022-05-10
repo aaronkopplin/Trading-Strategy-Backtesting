@@ -70,7 +70,7 @@ class CandleChart(LineChart):
             self.draw_candle(i)
 
     @overrides
-    def format_text_for_y_axis(self, text: float):
+    def format_text_for_y_axis(self, text: float) -> str:
         return convert_price_to_str(text)
 
     @overrides
