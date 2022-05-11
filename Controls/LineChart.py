@@ -226,9 +226,10 @@ class LineChart(Panel):
             return
         self.painter.setPen(QPen(StyleInfo.color_cursor, StyleInfo.pen_width, Qt.DashLine))
 
+        datapoint_for_x = self.get_datapoint_for_x(x)
         y1 = 0
         y2 = self.chart_height()
-        self.painter.drawLine(x, y1, x, y2)
+        self.painter.drawLine(datapoint_for_x, y1, datapoint_for_x, y2)
         if self.mouse_draw_event is not None:
             self.mouse_draw_event(self.__mouse_x, self.__mouse_y)
         self.update()
@@ -246,9 +247,15 @@ class LineChart(Panel):
             return int(self.height() / 2)
 
     def get_x_for_datapoint(self, i: int):
-        length = (self.last_index - self.first_index) - 1
+        length = self.num_datapoints_on_screen() - 1
         index_on_screen = i - self.first_index
         return int((index_on_screen / length) * self.chart_width()) - int(self.datapoint_width() / 2.0)
+
+    # take in an x pixel location and return the x pixel location of the closest datapoint
+    def get_datapoint_for_x(self, x: int) -> int:
+        percent = x / self.chart_width()
+        index = int(percent * self.num_datapoints_on_screen())
+        return self.get_x_for_datapoint(self.first_index + index)
 
     def draw_datapoint(self, i: int, collection: Collection):
         self.painter.setPen(QPen(collection.color.color(), StyleInfo.pen_width, Qt.SolidLine))
@@ -325,7 +332,6 @@ class LineChart(Panel):
                 self.painter.drawLine(x1, y1, x2, y2)
                 self.draw_y_axis_label(y1)
             self.draw_y_axis_label(self.__mouse_y)
-
 
     def draw_collections(self):
         collection: Collection

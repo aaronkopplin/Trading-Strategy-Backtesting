@@ -58,7 +58,7 @@ class CandleChart(LineChart):
 
         x = x - int(self.datapoint_width() / 2.0)
         y = int(self.get_y_for_datapoint(min(can.open(), can.close())))
-        w = self.datapoint_width() - 1
+        w = self.datapoint_width()
         top = self.get_y_for_datapoint(max(can.open(), can.close()))
         bottom = self.get_y_for_datapoint(min(can.open(), can.close()))
         h = int(top - bottom)
