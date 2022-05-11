@@ -79,5 +79,4 @@ class CandleChart(LineChart):
         self.draw_vertical_gridlines()
         self.draw_candles()
         self.draw_collections()
-        self.draw_axis_labels()
         self.draw_mouse_cursor()

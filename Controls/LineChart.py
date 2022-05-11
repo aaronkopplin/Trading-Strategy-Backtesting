@@ -62,6 +62,7 @@ class LineChart(Panel):
         super(LineChart, self).leaveEvent(a0)
         self.set_draw_vertical_cursor(False)
         self.set_draw_horizontal_cursor(False)
+        self.update()
         if self.mouse_leave_event is not None:
             self.mouse_leave_event()
 
@@ -73,6 +74,10 @@ class LineChart(Panel):
 
     def set_mouse_x(self, x: int):
         self.__mouse_x = x
+        self.update()
+
+    def set_mouse_y(self, y: int):
+        self.__mouse_y = y
         self.update()
 
     def set_draw_gridlines(self, draw: bool):
@@ -217,6 +222,8 @@ class LineChart(Panel):
         x1 = 0
         x2 = self.chart_width()
         self.painter.drawLine(x1, y, x2, y)
+        self.draw_y_axis_label(self.__mouse_y)
+
         if self.mouse_draw_event is not None:
             self.mouse_draw_event(self.__mouse_x, self.__mouse_y)
         self.update()
@@ -268,9 +275,6 @@ class LineChart(Panel):
         y2 = self.get_y_for_datapoint(second)
         self.painter.drawLine(x1, y1, x2, y2)
 
-    def draw_axis_labels(self):
-        self.painter.setPen(QPen(QColor(255, 255, 255), .05, Qt.SolidLine))
-
     def recalc_gridline_indexes(self):
         if self.__draw_gridlines:
             self.gridline_datapoints = []
@@ -293,12 +297,14 @@ class LineChart(Panel):
 
                     # find x axis value
                     self.painter.setPen(QPen(QColor(255, 255, 255), .05, Qt.SolidLine))
+                    self.painter.setBrush(QBrush(StyleInfo.color_background, Qt.SolidPattern))
+
                     display_val = self.format_text_for_x_axis(index)
-                    label_width = 100
-                    self.painter.drawText(QRectF(x - int(label_width / 2),
-                                                 self.chart_height(),
-                                                 label_width,
-                                                 self.x_axis_height), Qt.AlignHCenter | Qt.AlignCenter, display_val)
+                    w = 100
+                    y = self.chart_height()
+                    x = x - int(w / 2)
+                    h = self.x_axis_height
+                    self.painter.drawText(QRectF(x, y, w, h), Qt.AlignHCenter | Qt.AlignCenter, display_val)
 
     def format_text_for_x_axis(self, index: int) -> str:
         if self._x_axis_labels is not None:
@@ -312,12 +318,22 @@ class LineChart(Panel):
         return self.min_value_on_screen + ((self.chart_height() - y) / self.chart_height() * (self.max_value_on_screen - self.min_value_on_screen))
 
     def draw_y_axis_label(self, y: int):
-        self.painter.setPen(QPen(QColor(255, 255, 255), .05, Qt.SolidLine))
+        self.painter.setPen(QPen(QColor(255, 255, 255), .01, Qt.SolidLine))
+        self.painter.setBrush(QBrush(StyleInfo.color_background, Qt.SolidPattern))
+
         val = self.convert_y_to_value(y)
-        label_height = 50
-        self.painter.drawText(QRectF(self.chart_width(), y - label_height / 2, self.y_axis_width, label_height),
+        h = 20
+        x = self.chart_width()
+        y = int(y - h / 2)
+        w = self.y_axis_width
+        self.painter.drawRect(x, y, w, h)
+        self.painter.drawText(QRectF(x, y, w, h),
                               Qt.AlignHCenter | Qt.AlignCenter,
                               self.format_text_for_y_axis(val))
+
+    def draw_gridlines(self):
+        self.draw_horizontal_gridlines()
+        self.draw_vertical_gridlines()
 
     def draw_horizontal_gridlines(self):
         if self.__draw_gridlines:
@@ -331,7 +347,6 @@ class LineChart(Panel):
                 self.painter.setPen(QPen(StyleInfo.color_grid_line, StyleInfo.gridline_width, Qt.SolidLine))
                 self.painter.drawLine(x1, y1, x2, y2)
                 self.draw_y_axis_label(y1)
-            self.draw_y_axis_label(self.__mouse_y)
 
     def draw_collections(self):
         collection: Collection
@@ -342,8 +357,6 @@ class LineChart(Panel):
 
     @overrides
     def draw_objects(self):
-        self.draw_horizontal_gridlines()
-        self.draw_vertical_gridlines()
+        self.draw_gridlines()
         self.draw_collections()
-        self.draw_axis_labels()
         self.draw_mouse_cursor()
