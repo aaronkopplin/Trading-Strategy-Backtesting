@@ -1,61 +1,80 @@
 from DataClasses.Collection import Collection
 from DataClasses.RGBA import RGBA
+import typing
 
 
 class DataSet:
     def __init__(self, title: str, data: list[float], color: RGBA):
         if len(data) == 0:
             raise ValueError("cannot have collection of length 0")
-        self.__data: list[Collection] = [Collection(title, data, color)]
+        self.__data: typing.Dict[str, Collection] = {title: Collection(title, data, color)}
+        self.global_min = None
+        self.global_max = None
+        self.local_mins = {}
+        self.local_maxes = {}
+
+    def __reset_global_values(self):
+        self.global_min = None
+        self.global_max = None
+        self.local_mins = {}
+        self.local_maxes = {}
 
     def clear(self):
         self.__data = []
 
     def add_collection(self, title: str, data: list[float], rgba: RGBA):
-        if len(self.__data) > 0:
-            if len(self.__data[0]) == 0:
-                self.__data[0] = Collection(title, data, rgba)
-                return
-            if len(data) != len(self.__data[0]):
-                raise ValueError("All collections must have the same number of points")
-        self.__data.append(Collection(title, data, rgba))
+        if title in self.__data:
+            raise ValueError("Cannot have multiple collections with the same title")
+        if len(self.__data.keys()) > 0:
+            key = list(self.__data.keys())[0]
+            if len(self.__data[key]) != len(data):
+                raise ValueError("All collections in the dataset must have the same number of points")
+
+        self.__reset_global_values()
+        self.__data[title] = Collection(title, data, rgba)
 
     def collection_length(self):
         if len(self.__data) == 0:
             return 0
-        return len(self.__data[0])
+        return len(list(self.__data.values())[0])
 
-    def get_collection(self, index: int):
-        return self.__data[index]
-
-    def set_collection(self, collection: Collection, index: int):
-        self.__data[index] = collection
+    def set_collection(self, collection: Collection, title: str):
+        self.__reset_global_values()
+        self.__data[title] = collection
 
     def collections(self) -> list[Collection]:
-        return self.__data
+        return list(self.__data.values())
 
     def num_collections(self):
         return len(self.__data)
 
     def min_value(self):
+        if self.global_min:
+            return self.global_min
         min_ = float("inf")
         if self.collection_length() == 0:
             raise ValueError("collection is empty")
         for collection in self.collections():
-            for point in collection:
-                if point < min_:
-                    min_ = point
+            m = min(collection)
+            if m < min_:
+                min_ = m
+
+        self.global_min = min_
         return min_
 
     def min_value_between_indexes(self, start: int, end: int):
         min_ = float("inf")
         if self.collection_length() < start or self.collection_length() < end:
             raise ValueError("indexes exceed collection length")
+
+        if self.local_mins.get((start, end)):
+            return self.local_mins[(start, end)]
         for collection in self.collections():
-            for i in range(start, end):
-                point = collection[i]
-                if point < min_:
-                    min_ = point
+            m = min(collection[start:end])
+            if m < min_:
+                min_ = m
+
+        self.local_mins[(start, end)] = min_
         return min_
 
     def max_value(self):
@@ -63,18 +82,24 @@ class DataSet:
         if self.collection_length() == 0:
             raise ValueError("collection is empty")
         for collection in self.collections():
-            for point in collection:
-                if point > max_:
-                    max_ = point
+            m = max(collection)
+            if m > max_:
+                max_ = m
+
+        self.global_max = max_
         return max_
 
     def max_value_between_indexes(self, start: int, end: int):
         max_ = float("-inf")
         if self.collection_length() < start or self.collection_length() < end:
             raise ValueError("indexes exceed collection length")
+
+        if self.local_maxes.get((start, end)):
+            return self.local_maxes[(start, end)]
         for collection in self.collections():
-            for i in range(start, end):
-                point = collection[i]
-                if point > max_:
-                    max_ = point
+            m = max(collection[start:end])
+            if m > max_:
+                max_ = m
+
+        self.local_maxes[(start, end)] = max_
         return max_

@@ -56,10 +56,10 @@ class CandleChart(LineChart):
         y2 = int(self.get_y_for_datapoint(can.high()))
 
         if can.close() <= can.open():
-            self.painter.setPen(QPen(StyleInfo.color_green_candle, StyleInfo.pen_width, Qt.SolidLine))
+            self.painter.setPen(QPen(StyleInfo.color_red_candle, StyleInfo.pen_width, Qt.SolidLine))
             self.painter.setBrush(QBrush(StyleInfo.color_background, Qt.SolidPattern))
         else:
-            self.painter.setPen(QPen(StyleInfo.color_red_candle, StyleInfo.pen_width, Qt.SolidLine))
+            self.painter.setPen(QPen(StyleInfo.color_green_candle, StyleInfo.pen_width, Qt.SolidLine))
             self.painter.setBrush(QBrush(StyleInfo.color_background, Qt.SolidPattern))
         self.painter.drawLine(x, y1, x, y2)
 

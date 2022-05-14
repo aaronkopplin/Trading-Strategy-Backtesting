@@ -18,7 +18,11 @@ class LineChart(Panel):
         super().__init__()
         if len(data) == 0:
             raise ValueError("Cannot have empty dataset")
-        self.dataset = DataSet(title, data, rgba)
+
+        self.initial_data = (title, data, rgba)
+        self.dataset: DataSet = None
+        self.create_dataset(title, data, rgba)
+
         self.min_datapoints_on_screen = 2
         self.max_datapoints_on_screen = 300
         self.last_index = len(data) - 1
@@ -46,8 +50,13 @@ class LineChart(Panel):
         self.mouse_leave_event = None
         self._x_axis_labels: list[str] = None
 
+    def create_dataset(self, title: str, data: list[float], rgba: RGBA):
+        self.dataset = DataSet(title, data, rgba)
+
     def clear_datasets(self):
         self.dataset.clear()
+        title, data, rgba = self.initial_data
+        self.create_dataset(title, data, rgba)
 
     def set_x_axis_labels(self, labels: list[str]):
         self._x_axis_labels = labels
@@ -252,9 +261,9 @@ class LineChart(Panel):
         height = item - self.min_value_on_screen
         delta = self.max_value_on_screen - self.min_value_on_screen
         if delta != 0:
-            return self.height() - int((height / delta) * self.chart_height())
+            return self.chart_height() - int((height / delta) * self.chart_height())
         else:
-            return self.height() - int(self.height() / 2)
+            return self.chart_height() - int(self.chart_height() / 2)
 
     def get_x_for_datapoint(self, i: int):
         length = self.num_datapoints_on_screen() - 1
@@ -354,8 +363,9 @@ class LineChart(Panel):
     def draw_collections(self):
         text_height = 20
         collection: Collection
-        for i in range(self.dataset.num_collections()):
-            collection: Collection = self.dataset.get_collection(i)
+        collections = self.dataset.collections()
+        for i in range(len(collections)):
+            collection: Collection = collections[i]
             if len(collection) > 0:
                 for j in range(self.first_index, self.last_index - 1):
                     self.draw_datapoint(j, collection)

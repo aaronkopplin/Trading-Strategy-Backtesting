@@ -58,6 +58,7 @@ class TimeframePanel(Panel):
         self.load_parameters()
 
         self.submit_event = None
+        self.ticker_symbol = ""
 
     def run_query(self):
         begin = self.begin_timeframe.dateTime()
@@ -94,6 +95,7 @@ class TimeframePanel(Panel):
         interval = parameters[3]
 
         self.ticker_symbol_edit.set_text(ticker)
+        self.ticker_symbol = ticker
         self.begin_timeframe.setDateTime(datetime.strptime(begin, "%Y-%m-%d"))
         self.end_timeframe.setDateTime(datetime.strptime(end, "%Y-%m-%d"))
         self.candle_selector.setCurrentText(interval)
