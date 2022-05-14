@@ -46,6 +46,9 @@ class LineChart(Panel):
         self.mouse_leave_event = None
         self._x_axis_labels: list[str] = None
 
+    def clear_datasets(self):
+        self.dataset.clear()
+
     def set_x_axis_labels(self, labels: list[str]):
         self._x_axis_labels = labels
 
@@ -249,9 +252,9 @@ class LineChart(Panel):
         height = item - self.min_value_on_screen
         delta = self.max_value_on_screen - self.min_value_on_screen
         if delta != 0:
-            return int((height / delta) * self.chart_height())
+            return self.height() - int((height / delta) * self.chart_height())
         else:
-            return int(self.height() / 2)
+            return self.height() - int(self.height() / 2)
 
     def get_x_for_datapoint(self, i: int):
         length = self.num_datapoints_on_screen() - 1

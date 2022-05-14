@@ -5,6 +5,7 @@ from Controls.LayoutDirection import LayoutDirection
 from Strategy1 import Strategy1
 import StyleInfo
 from Controls.ChartAndIndicator import ChartAndIndicator
+from Controls.VerticalLayout import VerticalLayout
 
 
 class Window(QMainWindow):
@@ -20,7 +21,6 @@ class Window(QMainWindow):
 
         # file menu
         strategy_action = QAction("&Strategy 1", self)
-        self.strategy = None
         strategy_action.setShortcut("Ctrl+R")
         strategy_action.triggered.connect(self.run_strategy_event)
 
@@ -31,7 +31,14 @@ class Window(QMainWindow):
                                  """)
         file_menu: QMenu = main_menu.addMenu("&FILE")
         file_menu.addAction(strategy_action)
-        # file_menu.setStyleSheet("background-color: red;")
+
+        # indicators menu
+        bollinger_bands_action = QAction("Bollinger Bands", self)
+        bollinger_bands_action.setShortcut("Ctrl+B")
+        bollinger_bands_action.triggered.connect(self.bollinger_bands_event)
+
+        indicators_menu = main_menu.addMenu("&INDICATORS")
+        indicators_menu.addAction(bollinger_bands_action)
 
         # splitter
         self.splitter = Splitter(LayoutDirection.HORIZONTAL)
@@ -43,6 +50,7 @@ class Window(QMainWindow):
 
         # info panel
         self.info_panel = InfoPanel(candles, self.chart.candle_chart(), self.run_strategy_event)
+        # self.info_panel = InfoPanel()
         self.info_panel.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.splitter.addWidget(self.info_panel)
 
@@ -54,8 +62,14 @@ class Window(QMainWindow):
         self.InitWindow()
         self.showMaximized()
 
+    def bollinger_bands_event(self):
+        self.chart.indicator_checked("Bollinger Bands", True)
+
     def run_strategy_event(self):
-        self.strategy = Strategy1(self.chart.candle_chart(), self.candles)
+        self.chart.clear_strategy()
+
+        # TODO, instead of passing in the chart, create the strategy, then collect the strategy data, then plot on the chart
+        self.strategy = Strategy1(self.chart, self.candles)
 
     # def resizeEvent(self, a0: QtGui.QResizeEvent) -> None:
     #     self.info_panel.setMaximumWidth(int(self.width() / 3))

@@ -5,6 +5,7 @@ from DataClasses.RGBA import RGBA
 from Controls.Splitter import Splitter
 from Controls.LayoutDirection import LayoutDirection
 from Controls.IndicatorChart import IndicatorChart
+from Controls.TimeframePanel import TimeframePanel
 
 
 class ChartAndIndicator(Panel):
@@ -31,6 +32,9 @@ class ChartAndIndicator(Panel):
         self.splitter.addWidget(self.__candle_chart)
         self.splitter.addWidget(self.__indicator_chart)
 
+        self.timeframe_panel = TimeframePanel()
+        self.add_widget(self.timeframe_panel)
+
         self.__candle_chart.resize(self.width(), int(self.height() * .75))
         self.__indicator_chart.resize(self.width(), int(self.height() * .25))
 
@@ -43,6 +47,21 @@ class ChartAndIndicator(Panel):
 
         self.__candle_chart.mouse_leave_event = self.candle_chart_mouse_leave_event
         self.__indicator_chart.mouse_leave_event = self.indicator_chart_mouse_leave_event
+
+    def add_collection(self, data: list[float], rgba: RGBA):
+        self.__candle_chart.add_collection(data, rgba)
+
+    def add_indicator(self, data: list[float], rgba: RGBA):
+        self.__indicator_chart.add_collection(data, rgba)
+
+    def indicator_checked(self, indicator_name: str, checked: bool):
+        match indicator_name:
+            case "Bollinger Bands":
+                self.__candle_chart.bollinger_bands(20, 2)
+                return
+
+    def clear_strategy(self):
+        self.__candle_chart.clear_datasets()
 
     def indicator_chart_mouse_enter_event(self):
         self.__indicator_chart.change_first_index_event = self.indicator_chart_change_fist_index_event

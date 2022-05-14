@@ -21,6 +21,7 @@ class Panel(QtWidgets.QWidget):
         self.setMouseTracking(True)
         self.setStyleSheet(f"""
                             QWidget {{
+                                border: none;
                                 background-color: {StyleInfo.rgb_panel};
                                 color: white;
                                 font: {StyleInfo.font_size}px;

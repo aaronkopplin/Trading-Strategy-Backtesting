@@ -8,11 +8,17 @@ class DataSet:
             raise ValueError("cannot have collection of length 0")
         self.__data: list[Collection] = [Collection(data, color)]
 
-    def add_collection(self, data: list[float], rgb: RGBA):
+    def clear(self):
+        self.__data = []
+
+    def add_collection(self, data: list[float], rgba: RGBA):
         if len(self.__data) > 0:
+            if len(self.__data[0]) == 0:
+                self.__data[0] = Collection(data, rgba)
+                return
             if len(data) != len(self.__data[0]):
                 raise ValueError("All collections must have the same number of points")
-        self.__data.append(Collection(data, rgb))
+        self.__data.append(Collection(data, rgba))
 
     def collection_length(self):
         if len(self.__data) == 0:
@@ -33,6 +39,8 @@ class DataSet:
 
     def min_value(self):
         min_ = float("inf")
+        if self.collection_length() == 0:
+            raise ValueError("collection is empty")
         for collection in self.collections():
             for point in collection:
                 if point < min_:
@@ -41,6 +49,8 @@ class DataSet:
 
     def min_value_between_indexes(self, start: int, end: int):
         min_ = float("inf")
+        if self.collection_length() < start or self.collection_length() < end:
+            raise ValueError("indexes exceed collection length")
         for collection in self.collections():
             for i in range(start, end):
                 point = collection[i]
@@ -50,6 +60,8 @@ class DataSet:
 
     def max_value(self):
         max_ = float("-inf")
+        if self.collection_length() == 0:
+            raise ValueError("collection is empty")
         for collection in self.collections():
             for point in collection:
                 if point > max_:
@@ -58,6 +70,8 @@ class DataSet:
 
     def max_value_between_indexes(self, start: int, end: int):
         max_ = float("-inf")
+        if self.collection_length() < start or self.collection_length() < end:
+            raise ValueError("indexes exceed collection length")
         for collection in self.collections():
             for i in range(start, end):
                 point = collection[i]
