@@ -234,7 +234,7 @@ class LineChart(Panel):
         x1 = 0
         x2 = self.chart_width()
         self.painter.drawLine(x1, y, x2, y)
-        self.draw_y_axis_label(self.__mouse_y)
+        self.draw_y_axis_label(self.__mouse_y, Qt.white)
 
         if self.mouse_draw_event is not None:
             self.mouse_draw_event(self.__mouse_x, self.__mouse_y)
@@ -245,10 +245,19 @@ class LineChart(Panel):
             return
         self.painter.setPen(QPen(StyleInfo.color_cursor, StyleInfo.pen_width, Qt.DashLine))
 
-        datapoint_for_x = self.get_datapoint_for_x(x)
+        index, datapoint_for_x = self.get_datapoint_for_x(x)
         y1 = 0
         y2 = self.chart_height()
         self.painter.drawLine(datapoint_for_x, y1, datapoint_for_x, y2)
+
+        for collection in self.dataset.collections():
+            index, x = self.get_datapoint_for_x(self.__mouse_x)
+            point = collection[index]
+            y_value = self.get_y_for_datapoint(point)
+            self.painter.setPen(QPen(collection.get_qcolor(), StyleInfo.pen_width, Qt.DashLine))
+            self.painter.drawLine(x, y_value, self.chart_width(), y_value)
+            self.draw_y_axis_label(y_value, collection.get_qcolor())
+
         if self.mouse_draw_event is not None:
             self.mouse_draw_event(self.__mouse_x, self.__mouse_y)
         self.update()
@@ -271,10 +280,10 @@ class LineChart(Panel):
         return int((index_on_screen / length) * self.chart_width()) - int(self.datapoint_width() / 2.0)
 
     # take in an x pixel location and return the x pixel location of the closest datapoint
-    def get_datapoint_for_x(self, x: int) -> int:
+    def get_datapoint_for_x(self, x: int) -> (int, int):
         percent = x / self.chart_width()
         index = int(percent * self.num_datapoints_on_screen())
-        return self.get_x_for_datapoint(self.first_index + index)
+        return self.first_index + index, self.get_x_for_datapoint(self.first_index + index)
 
     def draw_datapoint(self, i: int, collection: Collection):
         self.painter.setPen(QPen(collection.color.color(), StyleInfo.pen_width, Qt.SolidLine))
@@ -329,8 +338,8 @@ class LineChart(Panel):
     def convert_y_to_value(self, y: float):
         return self.min_value_on_screen + ((self.chart_height() - y) / self.chart_height() * (self.max_value_on_screen - self.min_value_on_screen))
 
-    def draw_y_axis_label(self, y: int):
-        self.painter.setPen(QPen(QColor(255, 255, 255), .01, Qt.SolidLine))
+    def draw_y_axis_label(self, y: int, color: QColor):
+        self.painter.setPen(QPen(color, .01, Qt.SolidLine))
         self.painter.setBrush(QBrush(StyleInfo.color_background, Qt.SolidPattern))
 
         val = self.convert_y_to_value(y)
@@ -358,7 +367,7 @@ class LineChart(Panel):
                 y2 = y1
                 self.painter.setPen(QPen(StyleInfo.color_grid_line, StyleInfo.gridline_width, Qt.SolidLine))
                 self.painter.drawLine(x1, y1, x2, y2)
-                self.draw_y_axis_label(y1)
+                self.draw_y_axis_label(y1, Qt.white)
 
     def draw_collections(self):
         text_height = 20
