@@ -23,8 +23,6 @@ class DataSet:
         self.__data = []
 
     def add_collection(self, title: str, data: list[float], rgba: RGBA):
-        if title in self.__data:
-            raise ValueError("Cannot have multiple collections with the same title")
         if len(self.__data.keys()) > 0:
             key = list(self.__data.keys())[0]
             if len(self.__data[key]) != len(data):
@@ -33,14 +31,13 @@ class DataSet:
         self.__reset_global_values()
         self.__data[title] = Collection(title, data, rgba)
 
+    def contains(self, title: str):
+        return title in self.__data
+
     def collection_length(self):
         if len(self.__data) == 0:
             return 0
         return len(list(self.__data.values())[0])
-
-    def set_collection(self, collection: Collection, title: str):
-        self.__reset_global_values()
-        self.__data[title] = collection
 
     def collections(self) -> list[Collection]:
         return list(self.__data.values())
