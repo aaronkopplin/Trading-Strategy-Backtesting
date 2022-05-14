@@ -26,7 +26,7 @@ class InfoPanel(Panel):
         self.stat_panel.add_widget(self.statistics)
         self.splitter.addWidget(self.stat_panel)
 
-        self.output = LineChart([i for i in range(100)], RGBA(255, 255, 255, 255))
+        self.output = LineChart("PERFORMANCE", [i for i in range(100)], RGBA(255, 255, 255, 255))
         self.splitter.addWidget(self.output)
 
         self.stat_panel.resize(self.width(), int(self.height() / 2))

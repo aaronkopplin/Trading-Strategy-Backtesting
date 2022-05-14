@@ -14,11 +14,11 @@ from PyQt5 import QtWidgets, QtCore
 
 
 class LineChart(Panel):
-    def __init__(self, data: list[float], rgba: RGBA):
+    def __init__(self, title: str, data: list[float], rgba: RGBA):
         super().__init__()
         if len(data) == 0:
             raise ValueError("Cannot have empty dataset")
-        self.dataset = DataSet(data, rgba)
+        self.dataset = DataSet(title, data, rgba)
         self.min_datapoints_on_screen = 2
         self.max_datapoints_on_screen = 300
         self.last_index = len(data) - 1
@@ -244,9 +244,9 @@ class LineChart(Panel):
             self.mouse_draw_event(self.__mouse_x, self.__mouse_y)
         self.update()
 
-    def add_collection(self, data: list[float], rgb: RGBA):
-        self.dataset.add_collection(data, rgb)
-        self.update()
+    def add_collection(self, title: str, data: list[float], rgb: RGBA):
+        self.dataset.add_collection(title, data, rgb)
+        self.recalc_min_and_max()
 
     def get_y_for_datapoint(self, item: float) -> int:
         height = item - self.min_value_on_screen
@@ -352,11 +352,19 @@ class LineChart(Panel):
                 self.draw_y_axis_label(y1)
 
     def draw_collections(self):
+        text_height = 20
         collection: Collection
-        for collection in self.dataset.collections():
+        for i in range(self.dataset.num_collections()):
+            collection: Collection = self.dataset.get_collection(i)
             if len(collection) > 0:
-                for i in range(self.first_index, self.last_index - 1):
-                    self.draw_datapoint(i, collection)
+                for j in range(self.first_index, self.last_index - 1):
+                    self.draw_datapoint(j, collection)
+                # draw collection label
+                w = 200
+                y = i * text_height
+                x = 5
+                h = text_height
+                self.painter.drawText(QRectF(x, y, w, h), Qt.AlignVCenter | Qt.AlignLeft, collection.title)
 
     @overrides
     def draw_objects(self):

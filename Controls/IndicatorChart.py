@@ -15,8 +15,8 @@ import datetime
 
 
 class IndicatorChart(LineChart):
-    def __init__(self, data: list[float], rgba: RGBA):
-        super().__init__(data, rgba)
+    def __init__(self, title: str, data: list[float], rgba: RGBA):
+        super().__init__(title, data, rgba)
 
     @overrides
     def format_text_for_x_axis(self, index: int) -> str:

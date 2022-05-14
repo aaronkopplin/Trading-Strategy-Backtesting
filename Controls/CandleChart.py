@@ -25,13 +25,13 @@ class CandleChart(LineChart):
         closes = []
         for can in data:
             closes.append(can.close())
-        super().__init__(closes, RGBA(255, 255, 255,  0))
+        super().__init__("", closes, RGBA(255, 255, 255,  0))
 
     def bollinger_bands(self, length: int, stdev: int):
         lower_band, middle, upper_band = bollinger_bands(self.candles, length, stdev)
-        self.dataset.add_collection(upper_band, RGBA(51, 190, 255, 255))
-        self.dataset.add_collection(middle, RGBA(255, 188, 51, 255))
-        self.dataset.add_collection(lower_band, RGBA(51, 190, 255, 255))
+        self.dataset.add_collection("UPPER BOLLINGER", upper_band, RGBA(51, 190, 255, 255))
+        self.dataset.add_collection("MIDDLE BOLLINGER", middle, RGBA(255, 188, 51, 255))
+        self.dataset.add_collection("LOWER BOLLINGER", lower_band, RGBA(51, 190, 255, 255))
 
     def min_candle_value_between_indexes(self):
         can: Candle

@@ -11,11 +11,11 @@ class Strategy:
         self.chart: ChartAndIndicator = chart
         self.run(candles)
 
-    def plot(self, data: list[float], rgb: RGBA):
-        self.chart.add_collection(data, rgb)
+    def plot(self, title: str, data: list[float], rgb: RGBA):
+        self.chart.add_collection(title, data, rgb)
 
-    def plot_indicator(self, data: list[float], rgba: RGBA):
-        self.chart.add_indicator(data, rgba)
+    def plot_indicator(self, title: str, data: list[float], rgba: RGBA):
+        self.chart.add_indicator(title, data, rgba)
 
     def run(self, candles: list[Candle]):
         # loop over candles and make trades

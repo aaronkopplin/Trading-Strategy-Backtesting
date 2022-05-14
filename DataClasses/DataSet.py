@@ -3,22 +3,22 @@ from DataClasses.RGBA import RGBA
 
 
 class DataSet:
-    def __init__(self, data: list[float], color: RGBA):
+    def __init__(self, title: str, data: list[float], color: RGBA):
         if len(data) == 0:
             raise ValueError("cannot have collection of length 0")
-        self.__data: list[Collection] = [Collection(data, color)]
+        self.__data: list[Collection] = [Collection(title, data, color)]
 
     def clear(self):
         self.__data = []
 
-    def add_collection(self, data: list[float], rgba: RGBA):
+    def add_collection(self, title: str, data: list[float], rgba: RGBA):
         if len(self.__data) > 0:
             if len(self.__data[0]) == 0:
-                self.__data[0] = Collection(data, rgba)
+                self.__data[0] = Collection(title, data, rgba)
                 return
             if len(data) != len(self.__data[0]):
                 raise ValueError("All collections must have the same number of points")
-        self.__data.append(Collection(data, rgba))
+        self.__data.append(Collection(title, data, rgba))
 
     def collection_length(self):
         if len(self.__data) == 0:

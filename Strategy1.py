@@ -17,7 +17,7 @@ class Strategy1(Strategy):
             can = candles[i]
             closes.append(can.close())
 
-        self.plot(moving_average(closes, time_period=10), RGBA(255, 0, 255, 255))
-        self.plot(moving_average(closes, time_period=50), RGBA(0, 0, 255, 255))
+        self.plot("FAST MA", moving_average(closes, time_period=10), RGBA(255, 0, 255, 255))
+        self.plot("SLOW MA", moving_average(closes, time_period=50), RGBA(0, 0, 255, 255))
 
-        self.plot_indicator(closes, RGBA(0, 255, 0, 255))
+        self.plot_indicator("IDK", closes, RGBA(0, 255, 0, 255))

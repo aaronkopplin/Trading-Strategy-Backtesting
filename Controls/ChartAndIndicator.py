@@ -15,12 +15,12 @@ class ChartAndIndicator(Panel):
         low: list[float] = []
         for can in data:
             low.append(can.low())
-        self.__indicator_chart = IndicatorChart(low, RGBA(255, 0, 0, 255))
+        self.__indicator_chart = IndicatorChart("LOWS", low, RGBA(255, 0, 0, 255))
 
         high: list[float] = []
         for can in data:
             high.append(can.high())
-        self.__indicator_chart.add_collection(high, RGBA(0, 255, 0, 255))
+        self.__indicator_chart.add_collection("HIGHS", high, RGBA(0, 255, 0, 255))
 
         labels = []
         for can in data:
@@ -48,11 +48,11 @@ class ChartAndIndicator(Panel):
         self.__candle_chart.mouse_leave_event = self.candle_chart_mouse_leave_event
         self.__indicator_chart.mouse_leave_event = self.indicator_chart_mouse_leave_event
 
-    def add_collection(self, data: list[float], rgba: RGBA):
-        self.__candle_chart.add_collection(data, rgba)
+    def add_collection(self, title: str, data: list[float], rgba: RGBA):
+        self.__candle_chart.add_collection(title, data, rgba)
 
-    def add_indicator(self, data: list[float], rgba: RGBA):
-        self.__indicator_chart.add_collection(data, rgba)
+    def add_indicator(self, title: str, data: list[float], rgba: RGBA):
+        self.__indicator_chart.add_collection(title, data, rgba)
 
     def indicator_checked(self, indicator_name: str, checked: bool):
         match indicator_name:
