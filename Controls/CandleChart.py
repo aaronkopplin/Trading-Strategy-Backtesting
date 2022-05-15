@@ -20,9 +20,13 @@ class CandleChart(LineChart):
     def __init__(self, data: list[Candle]):
         self.candles = data
         closes = []
+        labels = []
         for can in data:
             closes.append(can.close())
+            labels.append(can.date_time())
         super().__init__("", closes, RGBA(255, 255, 255,  0))
+
+        self.set_x_axis_labels(labels)
 
     def bollinger_bands(self, length: int, stdev: int):
         lower_band, middle, upper_band = bollinger_bands(self.candles, length, stdev)

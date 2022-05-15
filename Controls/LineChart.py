@@ -248,12 +248,24 @@ class LineChart(Panel):
         y1 = 0
         y2 = self.chart_height()
         self.painter.drawLine(datapoint_for_x, y1, datapoint_for_x, y2)
-
+        if self._x_axis_labels:
+            self.draw_x_axis_label(index, self.get_x_for_datapoint(index), self.format_text_for_x_axis(index))
         self.draw_horizontal_indicator_lines()
 
         if self.mouse_draw_event is not None:
             self.mouse_draw_event(self.__mouse_x, self.__mouse_y)
         self.update()
+
+    def draw_x_axis_label(self, index: int, x: int, text: str):
+        self.painter.setPen(QPen(Qt.white, .01, Qt.SolidLine))
+        self.painter.setBrush(QBrush(StyleInfo.color_background, Qt.SolidPattern))
+
+        w = 100
+        y = self.chart_height()
+        x = x - int(w / 2)
+        h = self.x_axis_height
+        self.painter.drawRect(x, y, w, h)
+        self.painter.drawText(QRectF(x, y, w, h), Qt.AlignHCenter | Qt.AlignCenter, text)
 
     def add_collection(self, title: str, data: list[float], rgb: RGBA):
         self.dataset.add_collection(title, data, rgb)
@@ -303,22 +315,15 @@ class LineChart(Panel):
 
     def draw_vertical_gridlines(self):
         if self.__draw_gridlines:
-            self.painter.setPen(QPen(StyleInfo.color_grid_line, StyleInfo.gridline_width, Qt.SolidLine))
             for index in self.gridline_datapoints:
                 if self.first_index < index < self.last_index:
                     x = self.get_x_for_datapoint(index)
+                    self.painter.setPen(QPen(StyleInfo.color_grid_line, StyleInfo.gridline_width, Qt.SolidLine))
                     self.painter.drawLine(x, 0, x, self.chart_height())
 
                     # find x axis value
                     self.painter.setPen(QPen(QColor(255, 255, 255), .05, Qt.SolidLine))
-                    self.painter.setBrush(QBrush(StyleInfo.color_background, Qt.SolidPattern))
-
-                    display_val = self.format_text_for_x_axis(index)
-                    w = 100
-                    y = self.chart_height()
-                    x = x - int(w / 2)
-                    h = self.x_axis_height
-                    self.painter.drawText(QRectF(x, y, w, h), Qt.AlignHCenter | Qt.AlignCenter, display_val)
+                    self.draw_x_axis_label(index, x, self.format_text_for_x_axis(index))
 
     def format_text_for_x_axis(self, index: int) -> str:
         if self._x_axis_labels is not None:
