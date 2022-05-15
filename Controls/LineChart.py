@@ -338,7 +338,7 @@ class LineChart(Panel):
         h = 20
         x = self.chart_width()
         y = int(y - h / 2)
-        w = self.y_axis_width
+        w = self.width() - self.chart_width()
         self.painter.drawRect(x, y, w, h)
         self.painter.drawText(QRectF(x, y, w, h),
                               Qt.AlignHCenter | Qt.AlignCenter,
@@ -373,33 +373,19 @@ class LineChart(Panel):
                 # self.painter.drawLine(x, y_value, self.chart_width(), y_value)
                 self.draw_y_axis_label(point, y_value, collection.get_qcolor())
 
+                price_str = self.format_text_for_y_axis(point)
+                font = QFont("times", 12)
+                fm = QFontMetrics(font)
+                text = f"{collection.title} {price_str}"
                 text_height = 20
                 x = 5
                 y = i * text_height
-                w = 200
+                w = fm.width(text)
                 h = text_height
-                price_str = self.format_text_for_y_axis(point)
                 self.painter.drawRect(x, y, w, h)
                 self.painter.drawText(QRectF(x, y, w, h), Qt.AlignVCenter | Qt.AlignLeft,
-                                      f"{collection.title} {price_str}")
+                                      text)
                 i += 1
-
-    # def draw_collection_label(self):
-    #     for i in range(len(self.dataset.collections())):
-    #         collection: Collection = list(self.dataset.collections())[i]
-    #         index, x = self.get_datapoint_for_x(self.__mouse_x)
-    #         if index < len(collection):
-    #             point = collection[index]
-    #             price_str = self.format_text_for_y_axis(point)
-    #
-    #             text_height = 20
-    #             # draw collection label
-    #             w = 200
-    #             y = i * text_height
-    #             x = 5
-    #             h = text_height
-    #             self.painter.drawRect(x, y, w, h)
-    #             self.painter.drawText(QRectF(x, y, w, h), Qt.AlignVCenter | Qt.AlignLeft, f"{collection.title} {price_str}")
 
     def draw_collections(self):
         collection: Collection
