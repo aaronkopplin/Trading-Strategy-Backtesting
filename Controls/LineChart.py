@@ -234,7 +234,7 @@ class LineChart(Panel):
         x1 = 0
         x2 = self.chart_width()
         self.painter.drawLine(x1, y, x2, y)
-        self.draw_y_axis_label(self.__mouse_y, Qt.white)
+        self.draw_y_axis_label(self.convert_y_to_value(self.__mouse_y), self.__mouse_y, Qt.white)
 
         if self.mouse_draw_event is not None:
             self.mouse_draw_event(self.__mouse_x, self.__mouse_y)
@@ -244,19 +244,12 @@ class LineChart(Panel):
         if self.__mouse_x > self.chart_width() or self.__mouse_y > self.chart_height():
             return
         self.painter.setPen(QPen(StyleInfo.color_cursor, StyleInfo.pen_width, Qt.DashLine))
-
         index, datapoint_for_x = self.get_datapoint_for_x(x)
         y1 = 0
         y2 = self.chart_height()
         self.painter.drawLine(datapoint_for_x, y1, datapoint_for_x, y2)
 
-        for collection in self.dataset.collections():
-            index, x = self.get_datapoint_for_x(self.__mouse_x)
-            point = collection[index]
-            y_value = self.get_y_for_datapoint(point)
-            self.painter.setPen(QPen(collection.get_qcolor(), StyleInfo.pen_width, Qt.DashLine))
-            self.painter.drawLine(x, y_value, self.chart_width(), y_value)
-            self.draw_y_axis_label(y_value, collection.get_qcolor())
+        self.draw_horizontal_indicator_lines()
 
         if self.mouse_draw_event is not None:
             self.mouse_draw_event(self.__mouse_x, self.__mouse_y)
@@ -338,11 +331,10 @@ class LineChart(Panel):
     def convert_y_to_value(self, y: float):
         return self.min_value_on_screen + ((self.chart_height() - y) / self.chart_height() * (self.max_value_on_screen - self.min_value_on_screen))
 
-    def draw_y_axis_label(self, y: int, color: QColor):
+    def draw_y_axis_label(self, value: float, y: int, color: QColor):
         self.painter.setPen(QPen(color, .01, Qt.SolidLine))
         self.painter.setBrush(QBrush(StyleInfo.color_background, Qt.SolidPattern))
 
-        val = self.convert_y_to_value(y)
         h = 20
         x = self.chart_width()
         y = int(y - h / 2)
@@ -350,7 +342,7 @@ class LineChart(Panel):
         self.painter.drawRect(x, y, w, h)
         self.painter.drawText(QRectF(x, y, w, h),
                               Qt.AlignHCenter | Qt.AlignCenter,
-                              self.format_text_for_y_axis(val))
+                              self.format_text_for_y_axis(value))
 
     def draw_gridlines(self):
         self.draw_horizontal_gridlines()
@@ -367,10 +359,49 @@ class LineChart(Panel):
                 y2 = y1
                 self.painter.setPen(QPen(StyleInfo.color_grid_line, StyleInfo.gridline_width, Qt.SolidLine))
                 self.painter.drawLine(x1, y1, x2, y2)
-                self.draw_y_axis_label(y1, Qt.white)
+                self.draw_y_axis_label(self.convert_y_to_value(y1), y1, Qt.white)
+
+    # horizontal lines and labels for indicators
+    def draw_horizontal_indicator_lines(self):
+        i = 0
+        for collection in self.dataset.collections():
+            index, x = self.get_datapoint_for_x(self.__mouse_x)
+            if index < len(collection):
+                point = collection[index]
+                y_value = self.get_y_for_datapoint(point)
+                self.painter.setPen(QPen(collection.get_qcolor(), StyleInfo.pen_width, Qt.DashLine))
+                # self.painter.drawLine(x, y_value, self.chart_width(), y_value)
+                self.draw_y_axis_label(point, y_value, collection.get_qcolor())
+
+                text_height = 20
+                x = 5
+                y = i * text_height
+                w = 200
+                h = text_height
+                price_str = self.format_text_for_y_axis(point)
+                self.painter.drawRect(x, y, w, h)
+                self.painter.drawText(QRectF(x, y, w, h), Qt.AlignVCenter | Qt.AlignLeft,
+                                      f"{collection.title} {price_str}")
+                i += 1
+
+    # def draw_collection_label(self):
+    #     for i in range(len(self.dataset.collections())):
+    #         collection: Collection = list(self.dataset.collections())[i]
+    #         index, x = self.get_datapoint_for_x(self.__mouse_x)
+    #         if index < len(collection):
+    #             point = collection[index]
+    #             price_str = self.format_text_for_y_axis(point)
+    #
+    #             text_height = 20
+    #             # draw collection label
+    #             w = 200
+    #             y = i * text_height
+    #             x = 5
+    #             h = text_height
+    #             self.painter.drawRect(x, y, w, h)
+    #             self.painter.drawText(QRectF(x, y, w, h), Qt.AlignVCenter | Qt.AlignLeft, f"{collection.title} {price_str}")
 
     def draw_collections(self):
-        text_height = 20
         collection: Collection
         collections = self.dataset.collections()
         for i in range(len(collections)):
@@ -378,12 +409,6 @@ class LineChart(Panel):
             if len(collection) > 0:
                 for j in range(self.first_index, self.last_index - 1):
                     self.draw_datapoint(j, collection)
-                # draw collection label
-                w = 200
-                y = i * text_height
-                x = 5
-                h = text_height
-                self.painter.drawText(QRectF(x, y, w, h), Qt.AlignVCenter | Qt.AlignLeft, collection.title)
 
     @overrides
     def draw_objects(self):

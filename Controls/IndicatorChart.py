@@ -12,11 +12,16 @@ from DataClasses.Candle import Candle
 from overrides import overrides
 from DataClasses.RGBA import RGBA
 import datetime
+from Utilities.TextUtilities import convert_price_to_str
 
 
 class IndicatorChart(LineChart):
     def __init__(self, title: str, data: list[float], rgba: RGBA):
         super().__init__(title, data, rgba)
+
+    @overrides
+    def format_text_for_y_axis(self, text: float) -> str:
+        return convert_price_to_str(text)
 
     @overrides
     def format_text_for_x_axis(self, index: int) -> str:
@@ -25,6 +30,3 @@ class IndicatorChart(LineChart):
             '%d %H:%M')
         return date_time
 
-    @overrides
-    def format_text_for_y_axis(self, text: float) -> str:
-        return "$" + str(round(text, 2))

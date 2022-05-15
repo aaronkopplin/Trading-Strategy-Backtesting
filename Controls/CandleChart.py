@@ -12,10 +12,7 @@ from DataClasses.Candle import Candle
 from overrides import overrides
 from DataClasses.RGBA import RGBA
 from Indicators.BollingerBands import bollinger_bands
-
-
-def convert_price_to_str(price: float) -> str:
-    return '${:,.0f}'.format(price)
+from Utilities.TextUtilities import convert_price_to_str
 
 
 # handle drawing candles on top of data
