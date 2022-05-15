@@ -365,6 +365,8 @@ class LineChart(Panel):
     def draw_horizontal_indicator_lines(self):
         i = 0
         for collection in self.dataset.collections():
+            if collection.color.a == 0:
+                continue
             index, x = self.get_datapoint_for_x(self.__mouse_x)
             if index < len(collection):
                 point = collection[index]
