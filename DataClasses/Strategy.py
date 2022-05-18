@@ -84,4 +84,3 @@ class Strategy:
 
     def _next_candle(self):
         pass
-
