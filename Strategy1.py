@@ -7,17 +7,11 @@ from Utilities.MovingAverages import moving_average
 
 
 class Strategy1(Strategy):
-    def __init__(self, chart: ChartAndIndicator, candles: list[Candle]):
-        super().__init__("Bollinger Bands Breakout", 1000, chart, candles)
+    def __init__(self):
+        super().__init__()
+        self._set_name("First strategy")
+        self._set_account_bal(1000)
 
     @overrides
-    def run(self, candles: list[Candle]):
-        closes = []
-        for i in range(len(candles)):
-            can = candles[i]
-            closes.append(can.close())
-
-        self.plot("FAST MA", moving_average(closes, time_period=10), RGBA(255, 0, 255, 255))
-        self.plot("SLOW MA", moving_average(closes, time_period=50), RGBA(0, 0, 255, 255))
-
-        self.plot_indicator("IDK", closes, RGBA(0, 255, 0, 255))
+    def _next_candle(self):
+        self._plot("TEST", self._curr_candle.close(), RGBA(0, 255, 255, 255))

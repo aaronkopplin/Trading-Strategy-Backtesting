@@ -3,6 +3,7 @@ from PyQt5.QtWidgets import *
 from Controls.Splitter import Splitter
 from Controls.LayoutDirection import LayoutDirection
 from Strategy1 import Strategy1
+from DataClasses.Strategy import Strategy
 import StyleInfo
 from Controls.ChartAndIndicator import ChartAndIndicator
 from Controls.VerticalLayout import VerticalLayout
@@ -18,6 +19,7 @@ class Window(QMainWindow):
         self.setMinimumHeight(500)
         self.setContentsMargins(0, 0, 0, 0)
         self.candles = candles
+        self.strategy: Strategy = None
 
         # file menu
         strategy_action = QAction("&Strategy 1", self)
@@ -75,9 +77,11 @@ class Window(QMainWindow):
 
     def run_strategy_event(self):
         self.chart.clear_strategy()
-
-        # TODO, instead of passing in the chart, create the strategy, then collect the strategy data, then plot on the chart
-        self.strategy = Strategy1(self.chart, self.candles)
+        self.strategy = Strategy1()
+        self.strategy.set_chart(self.chart)
+        self.strategy.set_candles(self.candles)
+        self.strategy.set_performance_chart(self.info_panel)
+        self.strategy.run()
 
     # def resizeEvent(self, a0: QtGui.QResizeEvent) -> None:
     #     self.info_panel.setMaximumWidth(int(self.width() / 3))

@@ -25,8 +25,8 @@ class LineChart(Panel):
 
         self.min_datapoints_on_screen = 2
         self.max_datapoints_on_screen = 300
-        self.last_index = len(data) - 1
-        self.first_index = self.last_index - 2
+        self.last_index = len(data)
+        self.first_index = self.last_index - 1
         self.mouse_prev_x = None
         self.mouse_click_index = 0
         self.__mouse_x = 0
@@ -179,7 +179,7 @@ class LineChart(Panel):
                 self.recalc_gridline_indexes()
 
     def datapoint_width(self):
-        num_points = self.last_index - self.first_index - 1
+        num_points = self.last_index - self.first_index
         return int(float(self.chart_width()) / float(num_points))
 
     def get_nearest_datapoint_index(self, x: int):
@@ -280,8 +280,8 @@ class LineChart(Panel):
             return self.chart_height() - int(self.chart_height() / 2)
 
     def get_x_for_datapoint(self, i: int):
-        length = self.num_datapoints_on_screen() - 1
-        index_on_screen = i - self.first_index
+        length = self.num_datapoints_on_screen()
+        index_on_screen = i - self.first_index + 1
         return int((index_on_screen / length) * self.chart_width()) - int(self.datapoint_width() / 2.0)
 
     # take in an x pixel location and return the x pixel location of the closest datapoint

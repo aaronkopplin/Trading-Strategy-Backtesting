@@ -5,8 +5,6 @@ import typing
 
 class DataSet:
     def __init__(self, title: str, data: list[float], color: RGBA):
-        if len(data) == 0:
-            raise ValueError("cannot have collection of length 0")
         self.__data: typing.Dict[str, Collection] = {title: Collection(title, data, color)}
         self.global_min = None
         self.global_max = None
@@ -48,7 +46,11 @@ class DataSet:
     def min_value(self):
         if self.global_min:
             return self.global_min
+
         min_ = float("inf")
+        if len(self.collections()) == 0 or len(self.collections()[0]) == 0:
+            return min_
+
         if self.collection_length() == 0:
             raise ValueError("collection is empty")
         for collection in self.collections():
@@ -61,6 +63,9 @@ class DataSet:
 
     def min_value_between_indexes(self, start: int, end: int):
         min_ = float("inf")
+        if len(self.collections()) == 0 or len(self.collections()[0]) == 0:
+            return min_
+
         if self.collection_length() < start or self.collection_length() < end:
             raise ValueError("indexes exceed collection length")
 
@@ -76,6 +81,9 @@ class DataSet:
 
     def max_value(self):
         max_ = float("-inf")
+        if len(self.collections()) == 0 or len(self.collections()[0]) == 0:
+            return max_
+
         if self.collection_length() == 0:
             raise ValueError("collection is empty")
         for collection in self.collections():
@@ -90,6 +98,9 @@ class DataSet:
         max_ = float("-inf")
         if self.collection_length() < start or self.collection_length() < end:
             raise ValueError("indexes exceed collection length")
+
+        if len(self.collections()) == 0 or len(self.collections()[0]) == 0:
+            return max_
 
         if self.local_maxes.get((start, end)):
             return self.local_maxes[(start, end)]

@@ -5,7 +5,6 @@ from Controls.Button import Button
 from PyQt5.QtCore import Qt
 from Controls.Label import Label
 from Controls.TabControl import TabControl
-from Controls.StrategyButton import StrategyButton
 from DataClasses.Trade import Trade
 from typing import Callable
 from Controls.LineChart import LineChart
@@ -26,13 +25,14 @@ class InfoPanel(Panel):
         self.stat_panel.add_widget(self.statistics)
         self.splitter.addWidget(self.stat_panel)
 
-        self.output = LineChart("PERFORMANCE", [i for i in range(100)], RGBA(255, 255, 255, 255))
+        self.output = LineChart("PERFORMANCE", [0], RGBA(255, 255, 255, 255))
         self.splitter.addWidget(self.output)
 
         self.stat_panel.resize(self.width(), int(self.height() / 2))
         self.output.resize(self.width(), int(self.height() / 2))
 
-
+    def add_collection(self, title: str, data: list[float], rgba: RGBA):
+        self.output.add_collection(title, data, rgba)
 
 
     # def after_strategy_callback(self, account: Account):

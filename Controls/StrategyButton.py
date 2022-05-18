@@ -7,6 +7,6 @@ class StrategyButton(Button):
     def __init__(self, strategy: Strategy, parameters: dict, callback: Callable):
         super().__init__()
         self.strategy = strategy
-        self.setText(self.strategy.name)
+        self.setText(self.strategy._name)
         self.clicked.connect(lambda: self.strategy.strategy(parameters, callback))
         self.parameters = parameters
