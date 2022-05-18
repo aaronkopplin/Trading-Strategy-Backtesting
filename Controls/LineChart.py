@@ -18,11 +18,9 @@ class LineChart(Panel):
         super().__init__()
         if len(data) == 0:
             raise ValueError("Cannot have empty dataset")
-
         self.initial_data = (title, data, rgba)
         self.dataset: DataSet = None
         self.create_dataset(title, data, rgba)
-
         self.min_datapoints_on_screen = 2
         self.max_datapoints_on_screen = 300
         self.last_index = len(data)
@@ -137,6 +135,7 @@ class LineChart(Panel):
         self.update()
 
     def change_first_index(self, increment: bool):
+
         if increment:
             self.first_index += 1
         else:
@@ -158,6 +157,10 @@ class LineChart(Panel):
 
         if self.change_last_index_event is not None:
             self.change_last_index_event(increment)
+
+    def zoom_out_max(self):
+        while self.num_datapoints_on_screen() < self.dataset.collection_length() - 1 and self.num_datapoints_on_screen() < self.max_datapoints_on_screen:
+            self.zoom_out()
 
     @overrides
     def zoom_out(self):
@@ -326,7 +329,7 @@ class LineChart(Panel):
                     self.draw_x_axis_label(index, x, self.format_text_for_x_axis(index))
 
     def format_text_for_x_axis(self, index: int) -> str:
-        if self._x_axis_labels is not None:
+        if self._x_axis_labels is not None and index < len(self._x_axis_labels):
             return self._x_axis_labels[index]
         return str(index)
 
@@ -400,7 +403,7 @@ class LineChart(Panel):
         for i in range(len(collections)):
             collection: Collection = collections[i]
             if len(collection) > 0:
-                for j in range(self.first_index, self.last_index - 1):
+                for j in range(self.first_index, self.last_index - 1 ):
                     self.draw_datapoint(j, collection)
 
     @overrides

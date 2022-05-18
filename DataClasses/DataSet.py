@@ -21,13 +21,8 @@ class DataSet:
         self.__data = []
 
     def add_collection(self, title: str, data: list[float], rgba: RGBA):
-        if len(self.__data.keys()) > 0:
-            key = list(self.__data.keys())[0]
-            if len(self.__data[key]) != len(data):
-                raise ValueError("All collections in the dataset must have the same number of points")
-
-        self.__reset_global_values()
         self.__data[title] = Collection(title, data, rgba)
+        self.__reset_global_values()
 
     def contains(self, title: str):
         return title in self.__data

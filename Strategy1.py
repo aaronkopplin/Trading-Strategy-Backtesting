@@ -14,4 +14,5 @@ class Strategy1(Strategy):
 
     @overrides
     def _next_candle(self):
+        self._buy_percent(.05)
         self._plot("TEST", self._curr_candle.close(), RGBA(0, 255, 255, 255))

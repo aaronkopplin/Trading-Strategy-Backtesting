@@ -33,6 +33,7 @@ class InfoPanel(Panel):
 
     def add_collection(self, title: str, data: list[float], rgba: RGBA):
         self.output.add_collection(title, data, rgba)
+        self.output.zoom_out_max()
 
 
     # def after_strategy_callback(self, account: Account):

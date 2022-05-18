@@ -62,7 +62,12 @@ class Strategy:
         if price is None:
             price = self._curr_candle.close()
         self.__account.buy(price, amount, self.__curr_candle_index)
-        pass
+
+    def _buy_percent(self, percent: float, price: float = None):
+        if price is None:
+            price = self._curr_candle.close()
+        cash = percent * self.__account.usd_balance
+        self.__account.buy(price, cash, self.__curr_candle_index)
 
     def _sell(self):
         pass
@@ -78,8 +83,9 @@ class Strategy:
             self._next_candle()
             self.__account.store_account_value(self._curr_candle.close())
         self.__plot()
+        account_values = self.__account.get_account_values()
         self.__performance_chart.add_collection("PERFORMANCE",
-                                                self.__account.get_account_values(),
+                                                account_values,
                                                 RGBA(255, 255, 255, 255))
 
     def _next_candle(self):
