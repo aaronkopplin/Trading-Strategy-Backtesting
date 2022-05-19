@@ -47,6 +47,10 @@ class Window(QMainWindow):
         indicators_menu = main_menu.addMenu("&INDICATORS")
         indicators_menu.addAction(bollinger_bands_action)
 
+        clear_indicators_action = QAction("Clear Indicators", self)
+        clear_indicators_action.triggered.connect(self.clear_indicators_event)
+        indicators_menu.addAction(clear_indicators_action)
+
         # splitter
         self.splitter = Splitter(LayoutDirection.HORIZONTAL)
 
@@ -69,6 +73,9 @@ class Window(QMainWindow):
         self.InitWindow()
         self.showMaximized()
 
+    def clear_indicators_event(self):
+        self.chart.clear_strategy()
+
     def clear_strategies_event(self):
         self.chart.clear_strategy()
 
@@ -83,14 +90,6 @@ class Window(QMainWindow):
         self.strategy.set_performance_chart(self.info_panel)
         self.strategy.run()
 
-    # def resizeEvent(self, a0: QtGui.QResizeEvent) -> None:
-    #     self.info_panel.setMaximumWidth(int(self.width() / 3))
-
     def InitWindow(self):
         self.setWindowTitle(self.title)
         self.show()
-
-
-
-
-

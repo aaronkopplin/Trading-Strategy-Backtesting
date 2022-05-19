@@ -25,8 +25,10 @@ class IndicatorChart(LineChart):
 
     @overrides
     def format_text_for_x_axis(self, index: int) -> str:
-        date_time = self._x_axis_labels[index]
-        date_time = datetime.datetime.strptime(date_time[:len(date_time) - 6], '%Y-%m-%d %H:%M:%S').strftime(
-            '%d %H:%M')
-        return date_time
-
+        if index < len(self._x_axis_labels):
+            date_time = self._x_axis_labels[index]
+            date_time = datetime.datetime.strptime(date_time[:len(date_time) - 6], '%Y-%m-%d %H:%M:%S').strftime(
+                '%d %H:%M')
+            return date_time
+        else:
+            return ""

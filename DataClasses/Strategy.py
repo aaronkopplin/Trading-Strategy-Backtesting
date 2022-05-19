@@ -1,3 +1,5 @@
+import typing
+
 from DataClasses.Candle import Candle
 from DataClasses.Account import Account
 from Controls.ChartAndIndicator import ChartAndIndicator
@@ -10,7 +12,8 @@ class Strategy:
     def __init__(self):
         self.__account: Account = None
         self.__chart: ChartAndIndicator = None
-        self.__plot_values = {}
+        self.__plot_values: typing.Dict[str, Collection] = {}
+        self.__plot_indicator_values: list[typing.Dict[str, Collection]] = []
         self.__curr_candle_index = 0
         self.__performance_chart: InfoPanel = None
         self._name = None
@@ -18,14 +21,9 @@ class Strategy:
         self._curr_candle: Candle = None
         self._candles = None
 
+    # public members
     def set_performance_chart(self, chart: InfoPanel):
         self.__performance_chart = chart
-
-    def _set_name(self, name: str):
-        self._name = name
-
-    def _set_account_bal(self, bal: float):
-        self.__account = Account(bal)
 
     def set_chart(self, chart: ChartAndIndicator):
         self.__chart = chart
@@ -33,22 +31,43 @@ class Strategy:
     def set_candles(self, candles: list[Candle]):
         self._candles = candles
 
+    def run(self):
+        self.__account.store_account_value(self._candles[0].close())
+
+        for i in range(len(self._candles)):
+            self._curr_candle = self._candles[i]
+            if i > 0:
+                self._prev_candle = self._candles[i - 1]
+            self.__curr_candle_index = i
+            self._next_candle()
+            self.__account.store_account_value(self._curr_candle.close())
+
+        self.__chart.clear_strategy()
+        self.__plot_values_on_chart()
+        self.__plot_indicators()
+        account_values = self.__account.get_account_values()
+        self.__performance_chart.add_collection("PERFORMANCE",
+                                                account_values,
+                                                RGBA(255, 255, 255, 255))
+
+    # protected members
+    def _set_name(self, name: str):
+        self._name = name
+
+    def _set_account_bal(self, bal: float):
+        self.__account = Account(bal)
+
     def _plot(self, title: str, data: float, rgba: RGBA):
         if self.__plot_values.get(title) is None:
             self.__plot_values[title] = Collection(title, [], rgba)
         data_values: Collection = self.__plot_values[title]
         data_values.append(data)
 
-    def __plot(self):
-        self.__chart.clear_strategy()
-        for collection in self.__plot_values.values():
-            self.__chart.add_collection(collection.title, collection, collection.color)
-
-    def __plot_indicator(self, title: str, data: list[float], rgba: RGBA):
-        self.__chart.add_indicator(title, data, rgba)
-
-    def __plot_performance(self, title: str, data: list[float], rgba: RGBA):
-        self.__performance_chart.add_collection(title, data, rgba)
+    def _plot_indicator(self, title: str, data: float, rgba: RGBA, index: int):
+        if index >= len(self.__plot_indicator_values):
+            self.__plot_indicator_values.append({title: Collection(title, [data], rgba)})
+        else:
+            self.__plot_indicator_values[index][title].append(data)
 
     def _get_amount_for_percent(self, percent: float, price: float = None):
         if price is None:
@@ -72,21 +91,19 @@ class Strategy:
     def _sell(self):
         pass
 
-    def run(self):
-        self.__account.store_account_value(self._candles[0].close())
-
-        for i in range(len(self._candles)):
-            self._curr_candle = self._candles[i]
-            if i > 0:
-                self._prev_candle = self._candles[i - 1]
-            self.__curr_candle_index = i
-            self._next_candle()
-            self.__account.store_account_value(self._curr_candle.close())
-        self.__plot()
-        account_values = self.__account.get_account_values()
-        self.__performance_chart.add_collection("PERFORMANCE",
-                                                account_values,
-                                                RGBA(255, 255, 255, 255))
-
     def _next_candle(self):
         pass
+
+    # private members
+    def __plot_values_on_chart(self):
+        for collection in self.__plot_values.values():
+            self.__chart.add_collection(collection.title, collection, collection.color)
+
+    def __plot_indicators(self):
+        for i in range(len(self.__plot_indicator_values)):
+            item = self.__plot_indicator_values[i]
+            for val in item.values():
+                self.__chart.add_indicator(val.title, val, val.color, i)
+
+    def __plot_performance(self, title: str, data: list[float], rgba: RGBA):
+        self.__performance_chart.add_collection(title, data, rgba)

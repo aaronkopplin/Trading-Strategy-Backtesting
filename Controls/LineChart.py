@@ -134,8 +134,15 @@ class LineChart(Panel):
         self.max_value_on_screen = self.dataset.max_value_between_indexes(self.first_index, self.last_index)
         self.update()
 
-    def change_first_index(self, increment: bool):
+    #  use this only if you know what you are doing
+    def set_indexes(self, first_index: int, last_index: int):
+        self.first_index = first_index
+        self.last_index = last_index
 
+        self.recalc_min_and_max()
+        self.recalc_gridline_indexes()
+
+    def change_first_index(self, increment: bool):
         if increment:
             self.first_index += 1
         else:
@@ -337,7 +344,10 @@ class LineChart(Panel):
         return str(round(text, 2))  # override to change the format for the y axis labels
 
     def convert_y_to_value(self, y: float):
-        return self.min_value_on_screen + ((self.chart_height() - y) / self.chart_height() * (self.max_value_on_screen - self.min_value_on_screen))
+        if y != 0 and self.max_value_on_screen - self.min_value_on_screen != 0:
+            return self.min_value_on_screen + ((self.chart_height() - y) / self.chart_height() * (self.max_value_on_screen - self.min_value_on_screen))
+        else:
+            return 0
 
     def draw_y_axis_label(self, value: float, y: int, color: QColor):
         self.painter.setPen(QPen(color, .01, Qt.SolidLine))
