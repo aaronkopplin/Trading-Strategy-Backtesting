@@ -18,6 +18,14 @@ from Utilities.TextUtilities import convert_price_to_str
 class IndicatorChart(LineChart):
     def __init__(self, title: str, data: list[float], rgba: RGBA):
         super().__init__(title, data, rgba)
+        self.index = 0
+
+    @overrides
+    def draw_mouse_cursor(self):
+        if self._draw__vertical_cursor:
+            self.draw_vertical_mouse_line(self._mouse_x)
+        if self._draw__horizontal_cursor:
+            self.draw_horizontal_mouse_line(self._mouse_y)
 
     @overrides
     def format_text_for_y_axis(self, text: float) -> str:

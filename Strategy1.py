@@ -18,3 +18,5 @@ class Strategy1(Strategy):
         self._buy_percent(.05)
         self._plot("CLOSES", self._curr_candle.close(), RGBA(255, 0, 255, 255))
         self._plot_indicator("HIGHS", self._curr_candle.high(), RGBA(255, 0, 255, 255), 0)
+        self._plot_indicator("HIGHS", self._curr_candle.high(), RGBA(255, 0, 255, 255), 1)
+        self._plot_indicator("HIGHS", self._curr_candle.high(), RGBA(255, 0, 255, 255), 2)

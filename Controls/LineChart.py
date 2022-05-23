@@ -27,8 +27,8 @@ class LineChart(Panel):
         self.first_index = self.last_index - 1
         self.mouse_prev_x = None
         self.mouse_click_index = 0
-        self.__mouse_x = 0
-        self.__mouse_y = 0
+        self._mouse_x = 0
+        self._mouse_y = 0
         self.min_value_on_screen = 0
         self.max_value_on_screen = 0
         self.recalc_min_and_max()
@@ -36,17 +36,16 @@ class LineChart(Panel):
         self.x_axis_height = 40
         self.draw_x_axis = False
         self.draw_y_axis = False
-        self.change_first_index_event = None
-        self.change_last_index_event = None
         self.mouse_draw_event = None
         self.num_horizontal_gridlines = 8
         self.gridline_datapoints: list[int] = []
-        self.__draw_gridlines = True
-        self.__draw__vertical_cursor = True
-        self.__draw__horizontal_cursor = True
+        self._draw_gridlines = True
+        self._draw__vertical_cursor = True
+        self._draw__horizontal_cursor = True
         self.mouse_enter_event = None
         self.mouse_leave_event = None
         self._x_axis_labels: list[str] = None
+        self.index_change_event = None
 
     def create_dataset(self, title: str, data: list[float], rgba: RGBA):
         self.dataset = DataSet(title, data, rgba)
@@ -65,7 +64,7 @@ class LineChart(Panel):
         self.set_draw_vertical_cursor(True)
         self.set_draw_horizontal_cursor(True)
         if self.mouse_enter_event is not None:
-            self.mouse_enter_event()
+            self.mouse_enter_event(self)
 
     @overrides
     def leaveEvent(self, a0: QtCore.QEvent) -> None:
@@ -74,24 +73,24 @@ class LineChart(Panel):
         self.set_draw_horizontal_cursor(False)
         self.update()
         if self.mouse_leave_event is not None:
-            self.mouse_leave_event()
+            self.mouse_leave_event(self)
 
     def set_draw_vertical_cursor(self, draw: bool):
-        self.__draw__vertical_cursor = draw
+        self._draw__vertical_cursor = draw
 
     def set_draw_horizontal_cursor(self, draw: bool):
-        self.__draw__horizontal_cursor = draw
+        self._draw__horizontal_cursor = draw
 
     def set_mouse_x(self, x: int):
-        self.__mouse_x = x
+        self._mouse_x = x
         self.update()
 
     def set_mouse_y(self, y: int):
-        self.__mouse_y = y
+        self._mouse_y = y
         self.update()
 
     def set_draw_gridlines(self, draw: bool):
-        self.__draw_gridlines = draw
+        self._draw_gridlines = draw
 
     def set_draw_y_axis(self, draw: bool):
         self.draw_y_axis = draw
@@ -141,6 +140,7 @@ class LineChart(Panel):
 
         self.recalc_min_and_max()
         self.recalc_gridline_indexes()
+        self.update()
 
     def change_first_index(self, increment: bool):
         if increment:
@@ -150,20 +150,13 @@ class LineChart(Panel):
         self.recalc_min_and_max()
         self.recalc_gridline_indexes()
 
-        if self.change_first_index_event is not None:
-            self.change_first_index_event(increment)
-
     def change_last_index(self, increment: bool):
         if increment:
             self.last_index += 1
         else:
             self.last_index -= 1
         self.recalc_min_and_max()
-        self.recalc_min_and_max()
         self.recalc_gridline_indexes()
-
-        if self.change_last_index_event is not None:
-            self.change_last_index_event(increment)
 
     def zoom_out_max(self):
         while self.num_datapoints_on_screen() < self.dataset.collection_length() - 1 and self.num_datapoints_on_screen() < self.max_datapoints_on_screen:
@@ -225,33 +218,45 @@ class LineChart(Panel):
                 self.move_left(self.mouse_click_index - curr_index)
                 self.mouse_click_index = curr_index
 
-        self.__mouse_x = a0.x()
-        self.__mouse_y = a0.y()
+        self._mouse_x = a0.x()
+        self._mouse_y = a0.y()
+
+        if self.index_change_event is not None:
+            self.index_change_event(self.first_index, self.last_index)
+        if self.mouse_draw_event is not None:
+            self.mouse_draw_event(self._mouse_x, self._mouse_y, self)
 
         self.update()
 
+    @overrides
+    def wheelEvent(self, a0: QtGui.QWheelEvent) -> None:
+        super().wheelEvent(a0)
+        if self.handle_mouse_events:
+            if self.index_change_event is not None:
+                self.index_change_event(self.first_index, self.last_index)
+
     def draw_mouse_cursor(self):
-        if self.__draw__vertical_cursor:
-            self.draw_vertical_mouse_line(self.__mouse_x)
-        if self.__draw__horizontal_cursor:
-            self.draw_horizontal_mouse_line(self.__mouse_y)
+        if self._draw__vertical_cursor:
+            self.draw_vertical_mouse_line(self._mouse_x)
+        if self._draw__horizontal_cursor:
+            self.draw_horizontal_mouse_line(self._mouse_y)
+
+        if self.mouse_draw_event is not None:
+            self.mouse_draw_event(self._mouse_x, self._mouse_y, self)
 
     def draw_horizontal_mouse_line(self, y: int):
-        if self.__mouse_x > self.chart_width() or self.__mouse_y > self.chart_height():
+        if self._mouse_x > self.chart_width() or self._mouse_y > self.chart_height():
             return
         self.painter.setPen(QPen(StyleInfo.color_cursor, StyleInfo.pen_width, Qt.DashLine))
         # draw horizontal line
         x1 = 0
         x2 = self.chart_width()
         self.painter.drawLine(x1, y, x2, y)
-        self.draw_y_axis_label(self.convert_y_to_value(self.__mouse_y), self.__mouse_y, Qt.white)
-
-        if self.mouse_draw_event is not None:
-            self.mouse_draw_event(self.__mouse_x, self.__mouse_y)
+        self.draw_y_axis_label(self.convert_y_to_value(self._mouse_y), self._mouse_y, Qt.white)
         self.update()
 
     def draw_vertical_mouse_line(self, x: int):
-        if self.__mouse_x > self.chart_width() or self.__mouse_y > self.chart_height():
+        if self._mouse_x > self.chart_width() or self._mouse_y > self.chart_height():
             return
         self.painter.setPen(QPen(StyleInfo.color_cursor, StyleInfo.pen_width, Qt.DashLine))
         index, datapoint_for_x = self.get_datapoint_for_x(x)
@@ -261,9 +266,6 @@ class LineChart(Panel):
         if self._x_axis_labels:
             self.draw_x_axis_label(index, self.get_x_for_datapoint(index), self.format_text_for_x_axis(index))
         self.draw_horizontal_indicator_lines()
-
-        if self.mouse_draw_event is not None:
-            self.mouse_draw_event(self.__mouse_x, self.__mouse_y)
         self.update()
 
     def draw_x_axis_label(self, index: int, x: int, text: str):
@@ -312,7 +314,7 @@ class LineChart(Panel):
         self.painter.drawLine(x1, y1, x2, y2)
 
     def recalc_gridline_indexes(self):
-        if self.__draw_gridlines:
+        if self._draw_gridlines:
             self.gridline_datapoints = []
             if self.num_datapoints_on_screen() < 50:
                 dist_between_indexes = int(self.num_datapoints_on_screen() / 4)
@@ -324,7 +326,7 @@ class LineChart(Panel):
                         self.gridline_datapoints.append(i)
 
     def draw_vertical_gridlines(self):
-        if self.__draw_gridlines:
+        if self._draw_gridlines:
             for index in self.gridline_datapoints:
                 if self.first_index < index < self.last_index:
                     x = self.get_x_for_datapoint(index)
@@ -367,7 +369,7 @@ class LineChart(Panel):
         self.draw_vertical_gridlines()
 
     def draw_horizontal_gridlines(self):
-        if self.__draw_gridlines:
+        if self._draw_gridlines:
             num_labels_on_y_axis = self.num_horizontal_gridlines
             for i in range(int(num_labels_on_y_axis)):
                 x1 = 0
@@ -385,7 +387,7 @@ class LineChart(Panel):
         for collection in self.dataset.collections():
             if collection.color.a == 0:
                 continue
-            index, x = self.get_datapoint_for_x(self.__mouse_x)
+            index, x = self.get_datapoint_for_x(self._mouse_x)
             if index < len(collection):
                 point = collection[index]
                 y_value = self.get_y_for_datapoint(point)
