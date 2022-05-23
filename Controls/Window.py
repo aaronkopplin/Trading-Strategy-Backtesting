@@ -91,6 +91,7 @@ class Window(QMainWindow):
         self.strategy.set_performance_chart(self.info_panel)
         self.strategy.run()
 
+
     def InitWindow(self):
         self.setWindowTitle(self.title)
         self.show()

@@ -152,6 +152,8 @@ class LineChart(Panel):
             self.first_index -= 1
         self.recalc_min_and_max()
         self.recalc_gridline_indexes()
+        if self.index_change_event:
+            self.index_change_event(self.first_index, self.last_index)
 
     def change_last_index(self, increment: bool):
         if increment:
@@ -160,10 +162,13 @@ class LineChart(Panel):
             self.last_index -= 1
         self.recalc_min_and_max()
         self.recalc_gridline_indexes()
+        if self.index_change_event:
+            self.index_change_event(self.first_index, self.last_index)
 
     def zoom_out_max(self):
         while self.num_datapoints_on_screen() < self.dataset.collection_length() - 1 and self.num_datapoints_on_screen() < self.max_datapoints_on_screen:
             self.zoom_out()
+
 
     @overrides
     def zoom_out(self):

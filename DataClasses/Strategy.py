@@ -49,6 +49,7 @@ class Strategy:
         self.__chart.clear_strategy()
         self.__plot_values_on_chart()
         self.__plot_indicators()
+        self.__chart.zoom_max()
         account_values = self.__account.get_account_values()
         self.__plot_performance("PERFORMANCE",
                                 account_values,

@@ -116,3 +116,8 @@ class ChartAndIndicator(Panel):
     def candle_chart(self):
         return self.__candle_chart
 
+    def zoom_max(self):
+        self.__candle_chart.zoom_out_max()
+        for chart in self.indicator_charts:
+            chart.update()
+
