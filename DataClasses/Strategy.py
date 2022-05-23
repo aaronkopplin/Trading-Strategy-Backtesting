@@ -1,5 +1,5 @@
 import typing
-
+from PyQt5.QtWidgets import *
 from DataClasses.Candle import Candle
 from DataClasses.Account import Account
 from Controls.ChartAndIndicator import ChartAndIndicator
@@ -16,6 +16,7 @@ class Strategy:
         self.__plot_indicator_values: list[typing.Dict[str, Collection]] = []
         self.__curr_candle_index = 0
         self.__performance_chart: InfoPanel = None
+        self.__statistics: QTableWidget = None
         self._name = None
         self._prev_candle: Candle = None
         self._curr_candle: Candle = None
@@ -24,6 +25,9 @@ class Strategy:
     # public members
     def set_performance_chart(self, chart: InfoPanel):
         self.__performance_chart = chart
+
+    def set_statistics_table(self, table: QTableWidget):
+        self.__statistics = table
 
     def set_chart(self, chart: ChartAndIndicator):
         self.__chart = chart
@@ -46,9 +50,9 @@ class Strategy:
         self.__plot_values_on_chart()
         self.__plot_indicators()
         account_values = self.__account.get_account_values()
-        self.__performance_chart.add_collection("PERFORMANCE",
-                                                account_values,
-                                                RGBA(255, 255, 255, 255))
+        self.__plot_performance("PERFORMANCE",
+                                account_values,
+                                RGBA(255, 255, 255, 255))
 
     # protected members
     def _set_name(self, name: str):

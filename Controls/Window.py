@@ -34,10 +34,10 @@ class Window(QMainWindow):
         file_menu: QMenu = main_menu.addMenu("&FILE")
         file_menu.addAction(strategy_action)
 
-        clear_action = QAction("&Clear Strategies", self)
-        clear_action.setShortcut("Ctrl+C")
-        clear_action.triggered.connect(self.clear_strategies_event)
-        file_menu.addAction(clear_action)
+        delete_action = QAction("&Delete Strategies", self)
+        delete_action.setShortcut("Ctrl+D")
+        delete_action.triggered.connect(self.clear_strategies_event)
+        file_menu.addAction(delete_action)
 
         # indicators menu
         bollinger_bands_action = QAction("Bollinger Bands", self)
@@ -78,6 +78,7 @@ class Window(QMainWindow):
 
     def clear_strategies_event(self):
         self.chart.clear_strategy()
+        self.info_panel.clear_performance()
 
     def bollinger_bands_event(self):
         self.chart.indicator_checked("Bollinger Bands", True)

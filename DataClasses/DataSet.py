@@ -66,6 +66,7 @@ class DataSet:
 
         if self.local_mins.get((start, end)):
             return self.local_mins[(start, end)]
+
         for collection in self.collections():
             m = min(collection[start:end])
             if m < min_:
@@ -99,6 +100,7 @@ class DataSet:
 
         if self.local_maxes.get((start, end)):
             return self.local_maxes[(start, end)]
+
         for collection in self.collections():
             m = max(collection[start:end])
             if m > max_:

@@ -54,6 +54,9 @@ class LineChart(Panel):
         self.dataset.clear()
         title, data, rgba = self.initial_data
         self.create_dataset(title, data, rgba)
+        self.set_indexes(0, 1)
+        self.recalc_min_and_max()
+        self.update()
 
     def set_x_axis_labels(self, labels: list[str]):
         self._x_axis_labels = labels
@@ -241,9 +244,6 @@ class LineChart(Panel):
         if self._draw__horizontal_cursor:
             self.draw_horizontal_mouse_line(self._mouse_y)
 
-        if self.mouse_draw_event is not None:
-            self.mouse_draw_event(self._mouse_x, self._mouse_y, self)
-
     def draw_horizontal_mouse_line(self, y: int):
         if self._mouse_x > self.chart_width() or self._mouse_y > self.chart_height():
             return
@@ -414,8 +414,8 @@ class LineChart(Panel):
         collections = self.dataset.collections()
         for i in range(len(collections)):
             collection: Collection = collections[i]
-            if len(collection) > 0:
-                for j in range(self.first_index, self.last_index - 1 ):
+            if len(collection) > 1:
+                for j in range(self.first_index, self.last_index - 1):
                     self.draw_datapoint(j, collection)
 
     @overrides
