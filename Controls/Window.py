@@ -88,7 +88,8 @@ class Window(QMainWindow):
         self.strategy = Strategy1()
         self.strategy.set_chart(self.chart)
         self.strategy.set_candles(self.candles)
-        self.strategy.set_performance_chart(self.info_panel)
+        self.strategy.set_performance_chart(self.info_panel.output)
+        self.strategy.set_statistics_table(self.info_panel.statistics)
         self.strategy.run()
 
 

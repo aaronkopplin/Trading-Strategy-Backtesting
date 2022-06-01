@@ -11,6 +11,7 @@ from Controls.LineChart import LineChart
 from DataClasses.Account import Account
 from Controls.Splitter import Splitter
 from DataClasses.RGBA import RGBA
+import StyleInfo
 
 
 class InfoPanel(Panel):
@@ -19,8 +20,16 @@ class InfoPanel(Panel):
         self.splitter = Splitter(LayoutDirection.VERTICAL)
         self.add_widget(self.splitter)
 
-        self.statistics = QTableWidget()
-        self.statistics.setStyleSheet(f"border: none;")
+        self.statistics = QTableView()
+        self.statistics.setStyleSheet(f"""QHeaderView::section {{
+                                                background-color: {StyleInfo.rgb_splitter};
+                                                color: white;
+                                                padding-left: 4px;
+                                                border: 1px solid #6c6c6c;
+                                            }}
+                                      """)
+        self.statistics.verticalHeader().setVisible(False)
+
         self.stat_panel = Panel()
         self.stat_panel.add_widget(self.statistics)
         self.splitter.addWidget(self.stat_panel)

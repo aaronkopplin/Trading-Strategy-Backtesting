@@ -42,6 +42,8 @@ class ChartAndIndicator(Panel):
         self.__candle_chart.index_change_event = lambda f, l: self.candle_chart_index_change_event(f, l)
         self.__candle_chart.mouse_draw_event = lambda x, y ,c: self.candle_chart_mouse_draw_event(x, y, c)
 
+        self.__candle_chart.zoom_out_max()
+
     def clear_indicators(self):
         for i in range(len(self.indicator_charts)):
             widget = self.splitter.widget(i + 1)

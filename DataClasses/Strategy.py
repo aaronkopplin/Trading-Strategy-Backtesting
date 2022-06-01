@@ -6,6 +6,11 @@ from Controls.ChartAndIndicator import ChartAndIndicator
 from DataClasses.RGBA import RGBA
 from Controls.InfoPanel import InfoPanel
 from DataClasses.Collection import Collection
+from Controls.LineChart import LineChart
+from PyQt5.QtCore import *
+from PyQt5.QtWidgets import *
+from PyQt5.QtGui import *
+from Indicators.BollingerBands import bollinger_bands
 
 
 class Strategy:
@@ -15,19 +20,19 @@ class Strategy:
         self.__plot_values: typing.Dict[str, Collection] = {}
         self.__plot_indicator_values: list[typing.Dict[str, Collection]] = []
         self.__curr_candle_index = 0
-        self.__performance_chart: InfoPanel = None
-        self.__statistics: QTableWidget = None
+        self.__performance_chart: LineChart = None
+        self._statistics: QTableView = None
         self._name = None
         self._prev_candle: Candle = None
         self._curr_candle: Candle = None
         self._candles = None
 
     # public members
-    def set_performance_chart(self, chart: InfoPanel):
+    def set_performance_chart(self, chart: LineChart):
         self.__performance_chart = chart
 
-    def set_statistics_table(self, table: QTableWidget):
-        self.__statistics = table
+    def set_statistics_table(self, table: QTableView):
+        self._statistics = table
 
     def set_chart(self, chart: ChartAndIndicator):
         self.__chart = chart
@@ -54,6 +59,7 @@ class Strategy:
         self.__plot_performance("PERFORMANCE",
                                 account_values,
                                 RGBA(255, 255, 255, 255))
+        self._print_statistics()
 
     # protected members
     def _set_name(self, name: str):
@@ -62,13 +68,13 @@ class Strategy:
     def _set_account_bal(self, bal: float):
         self.__account = Account(bal)
 
-    def _plot(self, title: str, data: float, rgba: RGBA):
+    def plot(self, title: str, data: float, rgba: RGBA):
         if self.__plot_values.get(title) is None:
             self.__plot_values[title] = Collection(title, [], rgba)
         data_values: Collection = self.__plot_values[title]
         data_values.append(data)
 
-    def _plot_indicator(self, title: str, data: float, rgba: RGBA, index: int):
+    def plot_indicator(self, title: str, data: float, rgba: RGBA, index: int):
         if index >= len(self.__plot_indicator_values):
             self.__plot_indicator_values.append({title: Collection(title, [data], rgba)})
         else:
@@ -87,7 +93,7 @@ class Strategy:
             price = self._curr_candle.close()
         self.__account.buy(price, amount, self.__curr_candle_index)
 
-    def _buy_percent(self, percent: float, price: float = None):
+    def buy_percent(self, percent: float, price: float = None):
         if price is None:
             price = self._curr_candle.close()
         cash = percent * self.__account.usd_balance
@@ -112,3 +118,15 @@ class Strategy:
 
     def __plot_performance(self, title: str, data: list[float], rgba: RGBA):
         self.__performance_chart.add_collection(title, data, rgba)
+        self.__performance_chart.zoom_out_max()
+
+    def net_profit(self):
+        return sum(self.__account.profits)
+
+    def _print_statistics(self):
+        if self._statistics:
+            model = QStandardItemModel()
+            model.setHorizontalHeaderLabels(["Statistic", "Output"])
+            model.setItem(0, 0, QStandardItem("Net Profits"))
+            model.setItem(0, 1, QStandardItem(str(self.net_profit())))
+            self._statistics.setModel(model)

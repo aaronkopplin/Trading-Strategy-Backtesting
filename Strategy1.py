@@ -15,8 +15,9 @@ class Strategy1(Strategy):
 
     @overrides
     def _next_candle(self):
-        self._buy_percent(.05)
-        self._plot("CLOSES", self._curr_candle.close(), RGBA(255, 0, 255, 255))
-        self._plot_indicator("HIGHS", self._curr_candle.high(), RGBA(255, 0, 255, 255), 0)
-        self._plot_indicator("HIGHS", self._curr_candle.high(), RGBA(255, 0, 255, 255), 1)
-        self._plot_indicator("HIGHS", self._curr_candle.high(), RGBA(255, 0, 255, 255), 2)
+        # self.
+        self.buy_percent(.05)
+        self.plot("CLOSES", self._curr_candle.close(), RGBA(255, 0, 255, 255))
+        self.plot_indicator("HIGHS", self._curr_candle.high(), RGBA(255, 0, 255, 255), 0)
+        self.plot_indicator("HIGHS", self._curr_candle.high(), RGBA(255, 0, 255, 255), 1)
+        self.plot_indicator("HIGHS", self._curr_candle.high(), RGBA(255, 0, 255, 255), 2)
