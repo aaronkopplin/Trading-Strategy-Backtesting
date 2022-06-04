@@ -9,6 +9,7 @@ from Controls.Panel import Panel
 from DataClasses.DataSet import DataSet
 from DataClasses.RGBA import RGBA
 from DataClasses.Collection import Collection
+from DataClasses.Label import Label
 from overrides import overrides
 from PyQt5 import QtWidgets, QtCore
 
@@ -46,6 +47,7 @@ class LineChart(Panel):
         self.mouse_leave_event = None
         self._x_axis_labels: list[str] = None
         self.index_change_event = None
+        self.labels = []
 
     def create_dataset(self, title: str, data: list[float], rgba: RGBA):
         self.dataset = DataSet(title, data, rgba)
@@ -318,6 +320,21 @@ class LineChart(Panel):
         y2 = self.get_y_for_datapoint(second)
         self.painter.drawLine(x1, y1, x2, y2)
 
+    def draw_label(self, label: Label):
+        x = self.get_x_for_datapoint(label.x_index)
+        y = self.get_y_for_datapoint(label.y_value)
+        w = 50
+        h = 50
+
+        self.painter.setPen(QPen(Qt.white, .01, Qt.SolidLine))
+        self.painter.setBrush(QBrush(StyleInfo.color_background, Qt.SolidPattern))
+
+        self.painter.drawRect(x, y, w, h)
+        self.painter.drawText(QRectF(x, y, w, h), Qt.AlignHCenter | Qt.AlignCenter, label.text)
+
+    def add_label(self, y_value: float, x_index: int, text: str):
+        self.labels.append(Label(y_value, x_index, text))
+
     def recalc_gridline_indexes(self):
         if self._draw_gridlines:
             self.gridline_datapoints = []
@@ -423,8 +440,13 @@ class LineChart(Panel):
                 for j in range(self.first_index, self.last_index - 1):
                     self.draw_datapoint(j, collection)
 
+    def draw_labels(self):
+        for label in self.labels:
+            self.draw_label(label)
+
     @overrides
     def draw_objects(self):
         self.draw_gridlines()
         self.draw_collections()
+        self.draw_labels()
         self.draw_mouse_cursor()

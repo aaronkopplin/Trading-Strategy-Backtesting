@@ -7,6 +7,7 @@ from DataClasses.Strategy import Strategy
 import StyleInfo
 from Controls.ChartAndIndicator import ChartAndIndicator
 from Controls.VerticalLayout import VerticalLayout
+import traceback
 
 
 class Window(QMainWindow):
@@ -47,7 +48,7 @@ class Window(QMainWindow):
         indicators_menu = main_menu.addMenu("&INDICATORS")
         indicators_menu.addAction(bollinger_bands_action)
 
-        clear_indicators_action = QAction("Clear Indicators", self)
+        clear_indicators_action = QAction("Clear Indicator", self)
         clear_indicators_action.triggered.connect(self.clear_indicators_event)
         indicators_menu.addAction(clear_indicators_action)
 
@@ -92,7 +93,7 @@ class Window(QMainWindow):
         self.strategy.set_statistics_table(self.info_panel.statistics)
         self.strategy.run()
 
-
     def InitWindow(self):
         self.setWindowTitle(self.title)
         self.show()
+

@@ -53,7 +53,7 @@ class ChartAndIndicator(Panel):
 
     def create_new_indicator_chart(self, title: str, data: list[float], rgba: RGBA):
         if len(data) != self.__candle_chart.dataset.collection_length():
-            raise ValueError("Indicators must have a datapoint for every candle")
+            raise ValueError("Indicator must have a datapoint for every candle")
         indicator_chart = IndicatorChart(title, data, rgba)
         indicator_chart.set_x_axis_labels(self.x_axis_labels)
         indicator_chart.set_draw_y_axis(True)
@@ -122,4 +122,7 @@ class ChartAndIndicator(Panel):
         self.__candle_chart.zoom_out_max()
         for chart in self.indicator_charts:
             chart.update()
+
+    def draw_label(self, price: float, index: int, text: str):
+        self.__candle_chart.add_label(price, index, text)
 

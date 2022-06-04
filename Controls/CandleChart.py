@@ -11,7 +11,7 @@ from Controls.LineChart import LineChart
 from DataClasses.Candle import Candle
 from overrides import overrides
 from DataClasses.RGBA import RGBA
-from Indicators.BollingerBands import bollinger_bands
+from Indicator.BollingerBands import bollinger_bands
 from Utilities.TextUtilities import convert_price_to_str
 
 
@@ -87,4 +87,5 @@ class CandleChart(LineChart):
         self.draw_vertical_gridlines()
         self.draw_candles()
         self.draw_collections()
+        self.draw_labels()
         self.draw_mouse_cursor()

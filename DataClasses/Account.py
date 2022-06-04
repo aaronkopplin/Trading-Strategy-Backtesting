@@ -39,8 +39,8 @@ class Account:
             return True
         return False
 
-    def sell(self, price: float, index: int, candle_index: int):
-        trade = self.trades[index]
+    def sell(self, price: float, trade_index: int, candle_index: int):
+        trade = self.trades[trade_index]
         amt = trade.crypto_amount * price
         fee = amt * self.fee_percent
         if fee < self.usd_balance:

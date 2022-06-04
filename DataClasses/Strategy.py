@@ -10,47 +10,57 @@ from Controls.LineChart import LineChart
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
-from Indicators.BollingerBands import bollinger_bands
+from Indicator.Indicators import Indicators
 
 
 class Strategy:
     def __init__(self):
+
+        # private vars
         self.__account: Account = None
         self.__chart: ChartAndIndicator = None
-        self.__plot_values: typing.Dict[str, Collection] = {}
-        self.__plot_indicator_values: list[typing.Dict[str, Collection]] = []
-        self.__curr_candle_index = 0
         self.__performance_chart: LineChart = None
-        self._statistics: QTableView = None
-        self._name = None
-        self._prev_candle: Candle = None
-        self._curr_candle: Candle = None
-        self._candles = None
+        self.__statistics: QTableView = None
+
+        # public vars
+        self.plot_values: typing.Dict[str, Collection] = {}
+        self.plot_indicator_values: list[typing.Dict[str, Collection]] = []
+        self.curr_index = 0
+        self.prev_index = 0
+        self.name = None
+        self.prev_candle: Candle = None
+        self.curr_candle: Candle = None
+        self.candles: list[Candle] = None
+        self.indicators: Indicators = None
 
     # public members
     def set_performance_chart(self, chart: LineChart):
         self.__performance_chart = chart
 
     def set_statistics_table(self, table: QTableView):
-        self._statistics = table
+        self.__statistics = table
 
     def set_chart(self, chart: ChartAndIndicator):
         self.__chart = chart
 
     def set_candles(self, candles: list[Candle]):
-        self._candles = candles
+        self.candles = candles
+        self.indicators = Indicators(self.candles)
 
     def run(self):
-        self.__account.store_account_value(self._candles[0].close())
+        self.__account.store_account_value(self.candles[0].close())
 
-        for i in range(len(self._candles)):
-            self._curr_candle = self._candles[i]
+        self._before_strategy()
+        for i in range(len(self.candles)):
+            self.curr_candle = self.candles[i]
             if i > 0:
-                self._prev_candle = self._candles[i - 1]
-            self.__curr_candle_index = i
+                self.prev_candle = self.candles[i - 1]
+                self.prev_index = i - 1
             self._next_candle()
-            self.__account.store_account_value(self._curr_candle.close())
+            self.curr_index = i
+            self.__account.store_account_value(self.curr_candle.close())
 
+        self._after_strategy()
         self.__chart.clear_strategy()
         self.__plot_values_on_chart()
         self.__plot_indicators()
@@ -61,28 +71,50 @@ class Strategy:
                                 RGBA(255, 255, 255, 255))
         self._print_statistics()
 
+    # call in child class to plot on main candle chart
+    def add_plot_value(self, title: str, data: Collection):
+        if len(data) == 0:
+            raise ValueError("Cannot add empty collection!")
+        self.plot_values[title] = data
+
+    #  call in child class to plot on indicator charts below main chart
+    def add_indicator_value(self, title: str, data: Collection, index: int):
+        if len(data) == 0:
+            raise ValueError("Cannot add empty collection!")
+        if len(self.plot_indicator_values) <= index:
+            self.plot_indicator_values.append({title: data})
+            return
+
+        self.plot_indicator_values[index][title] = data
+
+    # override in child classes
+    def _next_candle(self):
+        pass
+
+    # override in child classes
+    def _before_strategy(self):
+        pass
+
+    # override in child classes
+    def _after_strategy(self):
+        pass
+
     # protected members
     def _set_name(self, name: str):
-        self._name = name
+        self.name = name
 
     def _set_account_bal(self, bal: float):
         self.__account = Account(bal)
 
     def plot(self, title: str, data: float, rgba: RGBA):
-        if self.__plot_values.get(title) is None:
-            self.__plot_values[title] = Collection(title, [], rgba)
-        data_values: Collection = self.__plot_values[title]
+        if self.plot_values.get(title) is None:
+            self.plot_values[title] = Collection(title, [], rgba)
+        data_values: Collection = self.plot_values[title]
         data_values.append(data)
-
-    def plot_indicator(self, title: str, data: float, rgba: RGBA, index: int):
-        if index >= len(self.__plot_indicator_values):
-            self.__plot_indicator_values.append({title: Collection(title, [data], rgba)})
-        else:
-            self.__plot_indicator_values[index][title].append(data)
 
     def _get_amount_for_percent(self, percent: float, price: float = None):
         if price is None:
-            price = self._curr_candle.close()
+            price = self.curr_candle.close()
 
         if percent < 0 or percent > 100:
             raise ValueError("Percent cannot be less than zero or greater than 100")
@@ -90,29 +122,35 @@ class Strategy:
 
     def _buy_amount(self, amount: float, price: float = None):
         if price is None:
-            price = self._curr_candle.close()
-        self.__account.buy(price, amount, self.__curr_candle_index)
+            price = self.curr_candle.close()
+        self.__account.buy(price, amount, self.curr_index)
 
     def buy_percent(self, percent: float, price: float = None):
         if price is None:
-            price = self._curr_candle.close()
+            price = self.curr_candle.close()
         cash = percent * self.__account.usd_balance
-        self.__account.buy(price, cash, self.__curr_candle_index)
+        self.buy(price, cash, self.curr_index)
 
-    def _sell(self):
-        pass
+    def buy(self, price: float, cash: float, index: int):
+        success = self.__account.buy(price, cash, index)
+        if success:
+            self.__chart.draw_label(price, index, "BUY")
 
-    def _next_candle(self):
-        pass
+    def sell_all_open_positions(self, price: float = None):
+        if price is None:
+            price = self.curr_candle.close()
+        success = self.__account.sell_all_open_positions(price, self.curr_index)
+        if success:
+            self.__chart.draw_label(price, self.curr_index, "SELL")
 
     # private members
     def __plot_values_on_chart(self):
-        for collection in self.__plot_values.values():
+        for collection in self.plot_values.values():
             self.__chart.add_collection(collection.title, collection, collection.color)
 
     def __plot_indicators(self):
-        for i in range(len(self.__plot_indicator_values)):
-            item = self.__plot_indicator_values[i]
+        for i in range(len(self.plot_indicator_values)):
+            item = self.plot_indicator_values[i]
             for val in item.values():
                 self.__chart.add_indicator(val.title, val, val.color, i)
 
@@ -124,9 +162,9 @@ class Strategy:
         return sum(self.__account.profits)
 
     def _print_statistics(self):
-        if self._statistics:
+        if self.__statistics:
             model = QStandardItemModel()
             model.setHorizontalHeaderLabels(["Statistic", "Output"])
             model.setItem(0, 0, QStandardItem("Net Profits"))
             model.setItem(0, 1, QStandardItem(str(self.net_profit())))
-            self._statistics.setModel(model)
+            self.__statistics.setModel(model)
