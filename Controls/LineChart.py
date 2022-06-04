@@ -271,7 +271,7 @@ class LineChart(Panel):
         y2 = self.chart_height()
         self.painter.drawLine(datapoint_for_x, y1, datapoint_for_x, y2)
         if self._x_axis_labels:
-            self.draw_x_axis_label(index, self.get_x_for_datapoint(index), self.format_text_for_x_axis(index))
+            self.draw_x_axis_label(index, self.get_x_for_index(index), self.format_text_for_x_axis(index))
         self.draw_horizontal_indicator_lines()
         self.update()
 
@@ -298,7 +298,7 @@ class LineChart(Panel):
         else:
             return self.chart_height() - int(self.chart_height() / 2)
 
-    def get_x_for_datapoint(self, i: int):
+    def get_x_for_index(self, i: int):
         length = self.num_datapoints_on_screen()
         index_on_screen = i - self.first_index + 1
         return int((index_on_screen / length) * self.chart_width()) - int(self.datapoint_width() / 2.0)
@@ -307,30 +307,44 @@ class LineChart(Panel):
     def get_datapoint_for_x(self, x: int) -> (int, int):
         percent = x / self.chart_width()
         index = int(percent * self.num_datapoints_on_screen())
-        return self.first_index + index, self.get_x_for_datapoint(self.first_index + index)
+        return self.first_index + index, self.get_x_for_index(self.first_index + index)
 
     def draw_datapoint(self, i: int, collection: Collection):
         self.painter.setPen(QPen(collection.color.color(), StyleInfo.pen_width, Qt.SolidLine))
         first = collection[i]
         second = collection[i + 1]
 
-        x1 = self.get_x_for_datapoint(i)
+        x1 = self.get_x_for_index(i)
         y1 = self.get_y_for_datapoint(first)
-        x2 = self.get_x_for_datapoint(i + 1)
+        x2 = self.get_x_for_index(i + 1)
         y2 = self.get_y_for_datapoint(second)
         self.painter.drawLine(x1, y1, x2, y2)
 
     def draw_label(self, label: Label):
-        x = self.get_x_for_datapoint(label.x_index)
         y = self.get_y_for_datapoint(label.y_value)
+        # w = self.datapoint_width()
+        # if w < 50:
+        #     w = 50
         w = 50
-        h = 50
+        x = self.get_x_for_index(label.x_index) - int(w / 2.0)
+        triangle_height = 15
+        square_height = 35
 
         self.painter.setPen(QPen(Qt.white, .01, Qt.SolidLine))
         self.painter.setBrush(QBrush(label.color, Qt.SolidPattern))
 
-        self.painter.drawRect(x, y, w, h)
-        self.painter.drawText(QRectF(x, y, w, h), Qt.AlignHCenter | Qt.AlignCenter, label.text)
+        rect = QRectF(x, y, w, triangle_height)
+
+        path = QPainterPath()
+        path.moveTo(rect.left() + (rect.width() / 2), rect.top())
+        path.lineTo(rect.bottomLeft())
+        path.lineTo(rect.bottomRight())
+        path.lineTo(rect.left() + (rect.width() / 2), rect.top())
+
+        self.painter.fillPath(path, label.color)
+
+        self.painter.drawRect(x, y + triangle_height, w, square_height)
+        self.painter.drawText(QRectF(x, y + triangle_height, w, square_height), Qt.AlignHCenter | Qt.AlignVCenter, label.text)
 
     def add_label(self, y_value: float, x_index: int, text: str, buy: bool):
         if buy:
@@ -356,7 +370,7 @@ class LineChart(Panel):
         if self._draw_gridlines:
             for index in self.gridline_datapoints:
                 if self.first_index < index < self.last_index:
-                    x = self.get_x_for_datapoint(index)
+                    x = self.get_x_for_index(index)
                     self.painter.setPen(QPen(StyleInfo.color_grid_line, StyleInfo.gridline_width, Qt.SolidLine))
                     self.painter.drawLine(x, 0, x, self.chart_height())
 

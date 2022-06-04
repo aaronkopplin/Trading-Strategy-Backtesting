@@ -52,7 +52,7 @@ class CandleChart(LineChart):
     def draw_candle(self, i: int):
         can: Candle = self.candles[i]
 
-        x = self.get_x_for_datapoint(i)
+        x = self.get_x_for_index(i)
         y1 = int(self.get_y_for_datapoint(can.low()))
         y2 = int(self.get_y_for_datapoint(can.high()))
 
