@@ -327,13 +327,18 @@ class LineChart(Panel):
         h = 50
 
         self.painter.setPen(QPen(Qt.white, .01, Qt.SolidLine))
-        self.painter.setBrush(QBrush(StyleInfo.color_background, Qt.SolidPattern))
+        self.painter.setBrush(QBrush(label.color, Qt.SolidPattern))
 
         self.painter.drawRect(x, y, w, h)
         self.painter.drawText(QRectF(x, y, w, h), Qt.AlignHCenter | Qt.AlignCenter, label.text)
 
-    def add_label(self, y_value: float, x_index: int, text: str):
-        self.labels.append(Label(y_value, x_index, text))
+    def add_label(self, y_value: float, x_index: int, text: str, buy: bool):
+        if buy:
+            color = StyleInfo.color_green_candle
+        else:
+            color = StyleInfo.color_red_candle
+        color.setAlpha(100)
+        self.labels.append(Label(y_value, x_index, text, color))
 
     def recalc_gridline_indexes(self):
         if self._draw_gridlines:

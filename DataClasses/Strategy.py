@@ -134,14 +134,14 @@ class Strategy:
     def buy(self, price: float, cash: float, index: int):
         success = self.__account.buy(price, cash, index)
         if success:
-            self.__chart.draw_label(price, index, "BUY")
+            self.__chart.add_label(price, index, "BUY", True)
 
     def sell_all_open_positions(self, price: float = None):
         if price is None:
             price = self.curr_candle.close()
         success = self.__account.sell_all_open_positions(price, self.curr_index)
         if success:
-            self.__chart.draw_label(price, self.curr_index, "SELL")
+            self.__chart.add_label(price, self.curr_index, "SELL", False)
 
     # private members
     def __plot_values_on_chart(self):

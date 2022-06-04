@@ -123,6 +123,6 @@ class ChartAndIndicator(Panel):
         for chart in self.indicator_charts:
             chart.update()
 
-    def draw_label(self, price: float, index: int, text: str):
-        self.__candle_chart.add_label(price, index, text)
+    def add_label(self, price: float, index: int, text: str, buy: bool):
+        self.__candle_chart.add_label(price, index, text, buy)
 
