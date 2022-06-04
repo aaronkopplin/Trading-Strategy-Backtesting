@@ -53,11 +53,11 @@ class Strategy:
         self._before_strategy()
         for i in range(len(self.candles)):
             self.curr_candle = self.candles[i]
+            self.curr_index = i
             if i > 0:
                 self.prev_candle = self.candles[i - 1]
                 self.prev_index = i - 1
             self._next_candle()
-            self.curr_index = i
             self.__account.store_account_value(self.curr_candle.close())
 
         self._after_strategy()

@@ -334,9 +334,9 @@ class LineChart(Panel):
 
     def add_label(self, y_value: float, x_index: int, text: str, buy: bool):
         if buy:
-            color = StyleInfo.color_green_candle
+            color = StyleInfo.color_green_candle()
         else:
-            color = StyleInfo.color_red_candle
+            color = StyleInfo.color_red_candle()
         color.setAlpha(100)
         self.labels.append(Label(y_value, x_index, text, color))
 

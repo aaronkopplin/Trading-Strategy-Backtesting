@@ -6,8 +6,15 @@ rgb_button_green = "rgb(62, 180, 68)"
 rgb_grid_line = "rgb(60, 67, 70)"
 rgb_splitter: str = "rgb(60, 67, 70)"
 
-color_green_candle = QColor(103, 191, 82)
-color_red_candle = QColor(244, 103, 54)
+
+def color_green_candle():
+    return QColor(103, 191, 82)
+
+
+def color_red_candle():
+    return QColor(244, 103, 54)
+
+
 color_background = QColor(6, 15, 20)
 color_grid_line = QColor(60, 67, 70)
 color_cursor = QColor(108, 112, 117)
