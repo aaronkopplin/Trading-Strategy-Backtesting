@@ -12,6 +12,7 @@ from DataClasses.Account import Account
 from Controls.Splitter import Splitter
 from DataClasses.RGBA import RGBA
 import StyleInfo
+from Controls.StatisticsTable import StatisticsTable
 
 
 class InfoPanel(Panel):
@@ -20,7 +21,7 @@ class InfoPanel(Panel):
         self.splitter = Splitter(LayoutDirection.VERTICAL)
         self.add_widget(self.splitter)
 
-        self.statistics = QTableView()
+        self.statistics = StatisticsTable()
         self.statistics.setStyleSheet(f"""QHeaderView::section {{
                                                 background-color: {StyleInfo.rgb_splitter};
                                                 color: white;

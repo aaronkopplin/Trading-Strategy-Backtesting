@@ -11,6 +11,9 @@ from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from Indicator.Indicators import Indicators
+from DataClasses.Trade import Trade
+from Controls.StatisticsTable import StatisticsTable
+from Utilities.TextUtilities import format_as_two_decimal_price
 
 
 class Strategy:
@@ -20,7 +23,7 @@ class Strategy:
         self.__account: Account = None
         self.__chart: ChartAndIndicator = None
         self.__performance_chart: LineChart = None
-        self.__statistics: QTableView = None
+        self.__statistics: StatisticsTable = None
 
         # public vars
         self.plot_values: typing.Dict[str, Collection] = {}
@@ -37,7 +40,7 @@ class Strategy:
     def set_performance_chart(self, chart: LineChart):
         self.__performance_chart = chart
 
-    def set_statistics_table(self, table: QTableView):
+    def set_statistics_table(self, table: StatisticsTable):
         self.__statistics = table
 
     def set_chart(self, chart: ChartAndIndicator):
@@ -69,7 +72,7 @@ class Strategy:
         self.__plot_performance("PERFORMANCE",
                                 account_values,
                                 RGBA(255, 255, 255, 255))
-        self._print_statistics()
+        self.print_statistics()
 
     # call in child class to plot on main candle chart
     def add_plot_value(self, title: str, data: Collection):
@@ -123,7 +126,7 @@ class Strategy:
     def _buy_amount(self, amount: float, price: float = None):
         if price is None:
             price = self.curr_candle.close()
-        self.__account.buy(price, amount, self.curr_index)
+        success = self.__account.buy(price, amount, self.curr_index)
 
     def buy_percent(self, percent: float, price: float = None):
         if price is None:
@@ -159,12 +162,38 @@ class Strategy:
         self.__performance_chart.zoom_out_max()
 
     def net_profit(self):
-        return sum(self.__account.profits)
+        return round(sum(self.__account.profits), 2)
 
-    def _print_statistics(self):
+    def winning_trades(self) -> list[Trade]:
+        return [trade for trade in self.__account.trades if trade.profit >= 0]
+
+    def losing_trades(self) -> list[Trade]:
+        return [trade for trade in self.__account.trades if trade.profit < 0]
+
+    def total_profits(self) -> float:
+        winning = self.winning_trades()
+        profit = sum([trade.profit for trade in winning])
+        return round(profit, 2)
+
+    def total_losses(self) -> float:
+        losing = self.losing_trades()
+        losses = sum([trade.profit for trade in losing])
+        return round(losses, 2)
+
+    def average_win(self):
+        return round(self.total_profits() / len(self.winning_trades()), 2)
+
+    def average_loss(self):
+        return round(self.total_losses() / len(self.losing_trades()), 2)
+
+    def print_statistics(self):
         if self.__statistics:
-            model = QStandardItemModel()
-            model.setHorizontalHeaderLabels(["Statistic", "Output"])
-            model.setItem(0, 0, QStandardItem("Net Profits"))
-            model.setItem(0, 1, QStandardItem(str(self.net_profit())))
-            self.__statistics.setModel(model)
+            self.__statistics.set_column_headers("Statistic", "Output")
+            self.__statistics.add_row("Net Profits", format_as_two_decimal_price(self.net_profit()))
+            self.__statistics.add_row("Total Profit", format_as_two_decimal_price(self.total_profits()))
+            self.__statistics.add_row("Total Losses", format_as_two_decimal_price(self.total_losses()))
+            self.__statistics.add_row("Num Buys", len(self.__account.trades))
+            self.__statistics.add_row("Winning Trades", len(self.winning_trades()))
+            self.__statistics.add_row("Average Win", format_as_two_decimal_price(self.average_win()))
+            self.__statistics.add_row("Losing Trades", len(self.losing_trades()))
+            self.__statistics.add_row("Average Loss", format_as_two_decimal_price(self.average_loss()))

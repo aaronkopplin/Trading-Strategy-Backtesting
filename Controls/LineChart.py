@@ -330,6 +330,9 @@ class LineChart(Panel):
         triangle_height = 15
         square_height = 35
 
+        if self.get_x_for_index(label.x_index) > self.chart_width():
+            return
+
         self.painter.setPen(QPen(Qt.white, .01, Qt.SolidLine))
         self.painter.setBrush(QBrush(label.color, Qt.SolidPattern))
 
