@@ -105,6 +105,7 @@ class ChartAndIndicator(Panel):
     def clear_strategy(self):
         self.clear_indicators()
         self.__candle_chart.clear_datasets()
+        self.__candle_chart.zoom_out_max()
 
     def candle_chart_index_change_event(self, first_index, last_index):
         for indicator_chart in self.indicator_charts:

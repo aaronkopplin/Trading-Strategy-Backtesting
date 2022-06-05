@@ -52,6 +52,7 @@ class Strategy:
 
     def run(self):
         self.__account.store_account_value(self.candles[0].close())
+        self.__chart.clear_strategy()
 
         self._before_strategy()
         for i in range(len(self.candles)):
@@ -64,7 +65,6 @@ class Strategy:
             self.__account.store_account_value(self.curr_candle.close())
 
         self._after_strategy()
-        self.__chart.clear_strategy()
         self.__plot_values_on_chart()
         self.__plot_indicators()
         self.__chart.zoom_max()

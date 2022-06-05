@@ -54,6 +54,7 @@ class LineChart(Panel):
 
     def clear_datasets(self):
         self.dataset.clear()
+        self.labels.clear()
         title, data, rgba = self.initial_data
         self.create_dataset(title, data, rgba)
         self.set_indexes(0, 1)
