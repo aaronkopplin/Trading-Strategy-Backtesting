@@ -261,7 +261,6 @@ class LineChart(Panel):
         x2 = self.chart_width()
         self.painter.drawLine(x1, y, x2, y)
         self.draw_y_axis_label(self.convert_y_to_value(self._mouse_y), self._mouse_y, Qt.white)
-        self.update()
 
     def draw_vertical_mouse_line(self, x: int):
         if self._mouse_x > self.chart_width() or self._mouse_y > self.chart_height():
@@ -274,7 +273,6 @@ class LineChart(Panel):
         if self._x_axis_labels:
             self.draw_x_axis_label(index, self.get_x_for_index(index), self.format_text_for_x_axis(index))
         self.draw_horizontal_indicator_lines()
-        self.update()
 
     def draw_x_axis_label(self, index: int, x: int, text: str):
         self.painter.setPen(QPen(Qt.white, .01, Qt.SolidLine))
@@ -455,6 +453,7 @@ class LineChart(Panel):
                 i += 1
 
     def draw_collections(self):
+
         collection: Collection
         collections = self.dataset.collections()
         for i in range(len(collections)):

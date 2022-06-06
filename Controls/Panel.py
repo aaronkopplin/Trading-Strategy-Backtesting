@@ -106,7 +106,6 @@ class Panel(QtWidgets.QWidget):
         o = QStyleOption()
         o.initFrom(self)
         self.style().drawPrimitive(QStyle.PE_Widget, o, self.painter, self)
-
         self.painter.begin(self)
         self.draw_background()
         self.painter.setRenderHint(QPainter.HighQualityAntialiasing)
