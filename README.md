@@ -9,4 +9,11 @@ Run your strategy with Ctrl + R
 
 The rest should be pretty self explanatory.
 
-DEPENDENCIES: PyQt5, YahooFinance, Overrides, Pillow, auto-py-to-exe
+DEPENDENCIES: 
+
+PyQt5: https://pypi.org/project/PyQt5/. pip install PyQt5
+
+yfinance: https://pypi.org/project/yfinance/.  pip install yfinance
+
+Overrides: https://pypi.org/project/overrides/.  pip install overrides
+
