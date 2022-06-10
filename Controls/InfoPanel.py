@@ -13,10 +13,11 @@ from Controls.Splitter import Splitter
 from DataClasses.RGBA import RGBA
 import StyleInfo
 from Controls.StatisticsTable import StatisticsTable
+from Controls.OutputChart import OutputChart
 
 
 class InfoPanel(Panel):
-    def __init__(self, candles: list[Candle], graph: LineChart, strategy_run_event: Callable):
+    def __init__(self):
         super().__init__()
         self.splitter = Splitter(LayoutDirection.VERTICAL)
         self.add_widget(self.splitter)
@@ -35,10 +36,11 @@ class InfoPanel(Panel):
         self.stat_panel.add_widget(self.statistics)
         self.splitter.addWidget(self.stat_panel)
 
-        self.output = LineChart("PERFORMANCE", [0], RGBA(255, 255, 255, 255))
+        self.output = OutputChart("PERFORMANCE", [0], RGBA(255, 255, 255, 255))
         self.add_output()
 
     def add_output(self):
+        self.output.set_draw_y_axis(True)
         self.splitter.addWidget(self.output)
         self.stat_panel.resize(self.width(), int(self.height() / 2))
         self.output.resize(self.width(), int(self.height() / 2))
@@ -49,3 +51,4 @@ class InfoPanel(Panel):
 
     def clear_performance(self):
         self.output.clear_datasets()
+        self.statistics.remove_all_rows()

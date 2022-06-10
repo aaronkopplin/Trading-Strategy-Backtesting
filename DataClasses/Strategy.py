@@ -186,6 +186,20 @@ class Strategy:
     def average_loss(self):
         return round(self.total_losses() / len(self.losing_trades()), 2)
 
+    def portfolio_max_value(self):
+        values = self.__account.get_account_values()
+        return max(values)
+
+    def portfolio_min_value(self):
+        values = self.__account.get_account_values()
+        return min(values)
+
+    def portfolio_value(self):
+        values = self.__account.get_account_values()
+        if len(values) > 0:
+            return values[-1]
+        return self.__account.usd_balance
+
     def print_statistics(self):
         if self.__statistics:
             self.__statistics.set_column_headers("Statistic", "Output")
@@ -197,3 +211,6 @@ class Strategy:
             self.__statistics.add_row("Average Win", format_as_two_decimal_price(self.average_win()))
             self.__statistics.add_row("Losing Trades", len(self.losing_trades()))
             self.__statistics.add_row("Average Loss", format_as_two_decimal_price(self.average_loss()))
+            self.__statistics.add_row("Portfolio max value", format_as_two_decimal_price(self.portfolio_max_value()))
+            self.__statistics.add_row("Portfolio min value", format_as_two_decimal_price(self.portfolio_min_value()))
+            self.__statistics.add_row("Portfolio ending value", format_as_two_decimal_price(self.portfolio_value()))

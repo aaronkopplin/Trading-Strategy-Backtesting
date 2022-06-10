@@ -49,6 +49,10 @@ class LineChart(Panel):
         self.index_change_event = None
         self.labels = []
 
+    def set_data(self, title: str, data: list[float], rgba: RGBA):
+        self.create_dataset(title, data, rgba)
+        self.update()
+
     def create_dataset(self, title: str, data: list[float], rgba: RGBA):
         self.dataset = DataSet(title, data, rgba)
 
@@ -386,7 +390,7 @@ class LineChart(Panel):
         return str(index)
 
     def format_text_for_y_axis(self, text: float) -> str:
-        return str(round(text, 2))  # override to change the format for the y axis labels
+        return str(text)  # override to change the format for the y axis labels
 
     def convert_y_to_value(self, y: float):
         if y != 0 and self.max_value_on_screen - self.min_value_on_screen != 0:

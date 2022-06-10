@@ -18,3 +18,7 @@ class StatisticsTable(QTableView):
         self.rows += 1
         self.resizeColumnsToContents()
 
+    def remove_all_rows(self):
+        self.model.removeRows(0, self.rows)
+        self.rows = 0
+

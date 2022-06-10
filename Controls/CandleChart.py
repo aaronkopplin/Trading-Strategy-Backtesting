@@ -28,6 +28,18 @@ class CandleChart(LineChart):
 
         self.set_x_axis_labels(labels)
 
+    def set_data(self, data: list[Candle]):
+        closes = []
+        labels = []
+        for can in data:
+            closes.append(can.close())
+            labels.append(can.date_time())
+
+        self.candles = data
+        self.create_dataset("", closes, RGBA(255, 255, 255,  0))
+        self.set_x_axis_labels(labels)
+        self.update()
+
     def bollinger_bands(self, length: int, stdev: int):
         lower_band, middle, upper_band = bollinger_bands(self.candles, length, stdev)
         self.add_collection("UPPER BOLLINGER", upper_band, RGBA(51, 190, 255, 255))

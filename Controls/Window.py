@@ -11,7 +11,7 @@ import traceback
 
 
 class Window(QMainWindow):
-    def __init__(self, candles: list):
+    def __init__(self):
         super().__init__()
         self.title = "Trading Bot"
         self.top = 150
@@ -19,7 +19,7 @@ class Window(QMainWindow):
         self.setMinimumWidth(1000)
         self.setMinimumHeight(500)
         self.setContentsMargins(0, 0, 0, 0)
-        self.candles = candles
+        # self.candles = candles
         self.strategy: Strategy = None
 
         # file menu
@@ -56,12 +56,12 @@ class Window(QMainWindow):
         self.splitter = Splitter(LayoutDirection.HORIZONTAL)
 
         # graph
-        self.chart: ChartAndIndicator = ChartAndIndicator(self.candles)
+        self.chart: ChartAndIndicator = ChartAndIndicator()
         self.chart.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.splitter.addWidget(self.chart)
 
         # info panel
-        self.info_panel = InfoPanel(candles, self.chart.candle_chart(), self.run_strategy_event)
+        self.info_panel = InfoPanel()
         # self.info_panel = InfoPanel()
         self.info_panel.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.splitter.addWidget(self.info_panel)
@@ -88,7 +88,7 @@ class Window(QMainWindow):
         self.chart.clear_strategy()
         self.strategy = Strategy1()
         self.strategy.set_chart(self.chart)
-        self.strategy.set_candles(self.candles)
+        self.strategy.set_candles(self.chart.candles)
         self.strategy.set_performance_chart(self.info_panel.output)
         self.strategy.set_statistics_table(self.info_panel.statistics)
         self.strategy.run()

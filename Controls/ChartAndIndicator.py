@@ -6,33 +6,38 @@ from Controls.Splitter import Splitter
 from Controls.LayoutDirection import LayoutDirection
 from Controls.IndicatorChart import IndicatorChart
 from Controls.TimeframePanel import TimeframePanel
+import yfinance as yf, pandas as pd
 
 
 class ChartAndIndicator(Panel):
-    def __init__(self, data: list[Candle]):
+    def __init__(self):
         super().__init__()
         self.indicator_charts: list[IndicatorChart] = []
         self.splitter = Splitter(LayoutDirection.VERTICAL)
         self.add_widget(self.splitter)
 
-        self.__candle_chart = CandleChart(data)
+        self.candles = []
+        self.__candle_chart: CandleChart = None
+        self.timeframe_panel = TimeframePanel()
+        self.timeframe_panel.submit_event = self.submit_event
+        self.timeframe_panel.run_query()
+
         self.splitter.addWidget(self.__candle_chart)
 
         self.x_axis_labels = []
-        for can in data:
+        for can in self.candles:
             self.x_axis_labels.append(can.date_time())
 
         low: list[float] = []
-        for can in data:
+        for can in self.candles:
             low.append(can.low())
         self.create_new_indicator_chart("LOWS", low, RGBA(255, 0, 0, 255))
 
         high: list[float] = []
-        for can in data:
+        for can in self.candles:
             high.append(can.high())
         self.add_indicator("HIGHS", high, RGBA(0, 255, 0, 255), 0)
 
-        self.timeframe_panel = TimeframePanel()
         self.add_widget(self.timeframe_panel)
 
         self.__candle_chart.resize(self.width(), int(self.height() * .75))
@@ -43,6 +48,25 @@ class ChartAndIndicator(Panel):
         self.__candle_chart.mouse_draw_event = lambda x, y ,c: self.candle_chart_mouse_draw_event(x, y, c)
 
         self.__candle_chart.zoom_out_max()
+
+    def submit_event(self, mom_data: pd.DataFrame):
+        candles = []
+        for row in mom_data.iloc:
+            date_time = str(row["name"])
+            open = row.Open
+            high = row.High
+            low = row.Low
+            close = row.Close
+            adj_close = 0
+            volume = row.Volume
+            candle = Candle([date_time, open, high, low, close, adj_close, volume])
+            candles.append(candle)
+
+        self.candles = candles
+        if self.__candle_chart is None:
+            self.__candle_chart = CandleChart(candles)
+        else:
+            self.__candle_chart.set_data(candles)
 
     def clear_indicators(self):
         for i in range(len(self.indicator_charts)):
