@@ -10,7 +10,7 @@ Run your strategy with Ctrl + R
 The rest should be pretty self explanatory.
 
 # Running the program
-cd C:\path\to\directory
+cd C:\path\to\directory  
 python Bot.py
 
 # Dependencies: 
