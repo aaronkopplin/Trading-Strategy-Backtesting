@@ -9,7 +9,11 @@ Run your strategy with Ctrl + R
 
 The rest should be pretty self explanatory.
 
-DEPENDENCIES: 
+# Running the program
+cd C:\path\to\directory
+python Bot.py
+
+# Dependencies: 
 
 PyQt5: https://pypi.org/project/PyQt5/. pip install PyQt5
 
