@@ -11,7 +11,7 @@ The rest should be pretty self explanatory.
 
 # Running the program
 cd C:\path\to\directory  
-python Bot.py
+`python Bot.py`
 
 # Dependencies: 
 
