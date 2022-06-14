@@ -10,6 +10,7 @@ Run your strategy with Ctrl + R
 The rest should be pretty self explanatory.
 
 # Running the program
+~ install the dependencies ~ 
 cd C:\path\to\directory  
 `python Bot.py`
 
