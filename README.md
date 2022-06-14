@@ -1,5 +1,5 @@
 # Trading-Bot
-![image](https://user-images.githubusercontent.com/48528737/173468947-b59ccfcc-3fa7-4b75-908e-f33370aecd2a.png)
+![image](https://user-images.githubusercontent.com/48528737/173469075-e585176f-59cd-4bf9-a46c-077bb6001d9a.png)
 
 This program allows you to plot stock or crypto data, create your own technical indicators, and backtest trading strategies
 
