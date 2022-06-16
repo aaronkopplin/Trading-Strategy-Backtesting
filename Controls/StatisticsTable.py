@@ -22,3 +22,9 @@ class StatisticsTable(QTableView):
         self.model.removeRows(0, self.rows)
         self.rows = 0
 
+    def width_all_columns(self) -> int:
+        width = 0
+        for i in range(self.model.columnCount()):
+            width += self.columnWidth(i)
+        return width
+

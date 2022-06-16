@@ -19,7 +19,6 @@ class Window(QMainWindow):
         self.setMinimumWidth(1000)
         self.setMinimumHeight(500)
         self.setContentsMargins(0, 0, 0, 0)
-        # self.candles = candles
         self.strategy: Strategy = None
 
         # file menu
@@ -66,9 +65,10 @@ class Window(QMainWindow):
         # self.info_panel = InfoPanel()
         self.info_panel.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.splitter.addWidget(self.info_panel)
+        self.splitter.setSizes([1, 0])
 
-        self.splitter.widget(0).resize(int(self.width() / 2), self.height())
-        self.splitter.widget(1).resize(int(self.width() / 2), self.height())
+        # self.splitter.widget(0).resize(int(self.width() / 2), self.height())
+        # self.splitter.widget(1).resize(int(self.width() / 2), self.height())
 
         # finish initialization
         self.setCentralWidget(self.splitter)
@@ -87,7 +87,6 @@ class Window(QMainWindow):
     def clear_strategies_event(self):
         self.strategy = None
         self.chart.clear_strategy()
-        self.info_panel.clear_performance()
 
     def bollinger_bands_event(self):
         self.chart.indicator_checked("Bollinger Bands", True)
@@ -97,9 +96,10 @@ class Window(QMainWindow):
         self.strategy = Strategy1()
         self.strategy.set_chart(self.chart)
         self.strategy.set_candles(self.chart.candles)
-        self.strategy.set_performance_chart(self.info_panel.output)
         self.strategy.set_statistics_table(self.info_panel.statistics)
         self.strategy.run()
+        self.splitter.setSizes([1, 1])
+
 
     def InitWindow(self):
         self.setWindowTitle(self.title)

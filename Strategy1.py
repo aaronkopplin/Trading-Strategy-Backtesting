@@ -17,6 +17,8 @@ class Strategy1(Strategy):
         self.upper_band = Collection("UPPER", [], RGBA(0, 0, 255, 255))
         self.slow_sma = Collection("SMA 200", [], RGBA(255, 255, 0, 255))
 
+        self.values = Collection("PORTFOLIO", [], RGBA(0, 255, 0, 255))
+
     @overrides
     def _before_strategy(self):
         pass
@@ -32,6 +34,8 @@ class Strategy1(Strategy):
         self.lower_band.append(lower)
         self.middle_band.append(middle)
         self.upper_band.append(upper)
+
+        self.values.append(self.account.account_value(self.curr_candle.close()))
 
         slow_sma = self.indicators.sma_closes(self.curr_index, slow_sma_length)
         self.slow_sma.append(slow_sma)
@@ -58,5 +62,6 @@ class Strategy1(Strategy):
         self.add_plot_value("SMA 200", self.slow_sma)
 
         self.add_indicator_value("HIGHS", self.highs, 0)
+        self.add_indicator_value("PORTFOLIO", self.values, 1)
 
 

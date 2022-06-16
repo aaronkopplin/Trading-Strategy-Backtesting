@@ -36,19 +36,5 @@ class InfoPanel(Panel):
         self.stat_panel.add_widget(self.statistics)
         self.splitter.addWidget(self.stat_panel)
 
-        self.output = OutputChart("PERFORMANCE", [0], RGBA(255, 255, 255, 255))
-        self.add_output()
 
-    def add_output(self):
-        self.output.set_draw_y_axis(True)
-        self.splitter.addWidget(self.output)
-        self.stat_panel.resize(self.width(), int(self.height() / 2))
-        self.output.resize(self.width(), int(self.height() / 2))
 
-    def add_collection(self, title: str, data: list[float], rgba: RGBA):
-        self.output.add_collection(title, data, rgba)
-        self.output.zoom_out_max()
-
-    def clear_performance(self):
-        self.output.clear_datasets()
-        self.statistics.remove_all_rows()

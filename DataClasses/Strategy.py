@@ -21,8 +21,7 @@ class Strategy:
         # private vars
         self.account: Account = None
         self.chart: ChartAndIndicator = None
-        self.performance_chart: LineChart = None
-        self.__statistics: StatisticsTable = None
+        self.statistics: StatisticsTable = None
 
         # public vars
         self.plot_values: typing.Dict[str, Collection] = {}
@@ -35,12 +34,8 @@ class Strategy:
         self.candles: list[Candle] = None
         self.indicators: Indicators = None
 
-    # public members
-    def set_performance_chart(self, chart: LineChart):
-        self.performance_chart = chart
-
     def set_statistics_table(self, table: StatisticsTable):
-        self.__statistics = table
+        self.statistics = table
 
     def set_chart(self, chart: ChartAndIndicator):
         self.chart = chart
@@ -68,9 +63,9 @@ class Strategy:
         self.plot_indicators()
         self.chart.zoom_max()
         account_values = self.account.get_account_values()
-        self.__plot_performance("PERFORMANCE",
-                                account_values,
-                                RGBA(255, 255, 255, 255))
+        self.add_indicator_value("PERFORMANCE",
+                                 Collection("PERFORMANCE", account_values, RGBA(0, 255, 0, 255)),
+                                 len(self.plot_indicator_values))
         self.print_statistics()
 
     # call in child class to plot on main candle chart
@@ -156,12 +151,6 @@ class Strategy:
             for val in item.values():
                 self.chart.add_indicator(val.title, val, val.color, i)
 
-    def __plot_performance(self, title: str, data: list[float], rgba: RGBA):
-        self.performance_chart.clear_datasets()
-        self.performance_chart.add_collection(title, data, rgba)
-        self.performance_chart.reset_indexes()
-        self.performance_chart.zoom_out_max()
-
     def net_profit(self):
         return round(sum(self.account.profits), 2)
 
@@ -202,17 +191,17 @@ class Strategy:
         return self.account.usd_balance
 
     def print_statistics(self):
-        if self.__statistics:
-            self.__statistics.set_column_headers("Statistic", "Output")
-            self.__statistics.remove_all_rows()
-            self.__statistics.add_row("Net Profits", format_as_two_decimal_price(self.net_profit()))
-            self.__statistics.add_row("Total Profit", format_as_two_decimal_price(self.total_profits()))
-            self.__statistics.add_row("Total Losses", format_as_two_decimal_price(self.total_losses()))
-            self.__statistics.add_row("Num Buys", len(self.account.trades))
-            self.__statistics.add_row("Winning Trades", len(self.winning_trades()))
-            self.__statistics.add_row("Average Win", format_as_two_decimal_price(self.average_win()))
-            self.__statistics.add_row("Losing Trades", len(self.losing_trades()))
-            self.__statistics.add_row("Average Loss", format_as_two_decimal_price(self.average_loss()))
-            self.__statistics.add_row("Portfolio max value", format_as_two_decimal_price(self.portfolio_max_value()))
-            self.__statistics.add_row("Portfolio min value", format_as_two_decimal_price(self.portfolio_min_value()))
-            self.__statistics.add_row("Portfolio ending value", format_as_two_decimal_price(self.portfolio_value()))
+        if self.statistics:
+            self.statistics.set_column_headers("Statistic", "Output")
+            self.statistics.remove_all_rows()
+            self.statistics.add_row("Net Profits", format_as_two_decimal_price(self.net_profit()))
+            self.statistics.add_row("Total Profit", format_as_two_decimal_price(self.total_profits()))
+            self.statistics.add_row("Total Losses", format_as_two_decimal_price(self.total_losses()))
+            self.statistics.add_row("Num Buys", len(self.account.trades))
+            self.statistics.add_row("Winning Trades", len(self.winning_trades()))
+            self.statistics.add_row("Average Win", format_as_two_decimal_price(self.average_win()))
+            self.statistics.add_row("Losing Trades", len(self.losing_trades()))
+            self.statistics.add_row("Average Loss", format_as_two_decimal_price(self.average_loss()))
+            self.statistics.add_row("Portfolio max value", format_as_two_decimal_price(self.portfolio_max_value()))
+            self.statistics.add_row("Portfolio min value", format_as_two_decimal_price(self.portfolio_min_value()))
+            self.statistics.add_row("Portfolio ending value", format_as_two_decimal_price(self.portfolio_value()))
