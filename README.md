@@ -22,7 +22,9 @@ yfinance: https://pypi.org/project/yfinance/.  `pip install yfinance`
 
 Overrides: https://pypi.org/project/overrides/.  `pip install overrides`
 
-ta: https://github.com/bukosabino/ta.  `pip install --upgrade ta`
+ta: https://github.com/bukosabino/ta.  `pip install --upgrade ta`  
+  
+# Example strategy
 
 ```
 class Strategy1(Strategy):
