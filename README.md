@@ -26,7 +26,7 @@ ta: https://github.com/bukosabino/ta.  `pip install --upgrade ta`
   
 # Example strategy
 
-``` { .python } 
+```python
 class Strategy1(Strategy):
     def __init__(self):
         super().__init__()
