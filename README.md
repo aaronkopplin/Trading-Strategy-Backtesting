@@ -1,5 +1,5 @@
-# Trading Strategy Backtesting
-![image](https://user-images.githubusercontent.com/48528737/173469154-ba025e27-c1e4-425d-990f-506a4ae2c3f0.png)
+# Trading Strategy Backtesting  
+![image](https://user-images.githubusercontent.com/48528737/174193338-97166785-a926-4a0e-97db-77a8403130f3.png)
 
 This program allows you to plot stock or crypto data, create your own technical indicators, and backtest trading strategies
 
