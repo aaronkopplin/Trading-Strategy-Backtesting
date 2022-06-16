@@ -7,18 +7,18 @@ class Account:
         self.usd_balance: float = balance
         self.crypto_balance: float = 0
         self.trades: list[Trade] = []
-        self.__account_values: list[float] = []
+        self.account_values: list[float] = []
         self.cash_reserve_values = []
         self.profits = []
         self.fee_percent = .001
         self.fees_taken = 0
 
     def get_account_values(self) -> list[float]:
-        return self.__account_values
+        return self.account_values
 
     def store_account_value(self, price: float):
         value = self.account_value(price)
-        self.__account_values.append(value)
+        self.account_values.append(value)
         self.cash_reserve_values.append(self.usd_balance)
 
     def account_value(self, price: float):

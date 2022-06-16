@@ -8,10 +8,11 @@ from PyQt5.QtCore import *
 
 
 class Collection(list):
-    def __init__(self, title: str, data: list, color: RGBA):
+    def __init__(self, title: str, data: list, color: RGBA, tag: str = ""):
         super(Collection, self).__init__(data)
         self.color: RGBA = color
         self.title = title
+        self.tag = tag
 
     def get_qcolor(self):
         return QColor(self.color.r, self.color.g, self.color.b, self.color.a)

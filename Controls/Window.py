@@ -58,6 +58,7 @@ class Window(QMainWindow):
         # graph
         self.chart: ChartAndIndicator = ChartAndIndicator()
         self.chart.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.chart.data_change_event = self.data_change_event
         self.splitter.addWidget(self.chart)
 
         # info panel
@@ -74,10 +75,17 @@ class Window(QMainWindow):
         self.InitWindow()
         self.showMaximized()
 
+    def data_change_event(self):
+        pass
+        # todo add this!
+        # if self.strategy:
+        #     self.run_strategy_event()
+
     def clear_indicators_event(self):
         self.chart.clear_strategy()
 
     def clear_strategies_event(self):
+        self.strategy = None
         self.chart.clear_strategy()
         self.info_panel.clear_performance()
 

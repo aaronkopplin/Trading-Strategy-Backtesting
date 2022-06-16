@@ -19,7 +19,6 @@ class LineChart(Panel):
         super().__init__()
         if len(data) == 0:
             raise ValueError("Cannot have empty dataset")
-        self.initial_data = (title, data, rgba)
         self.dataset: DataSet = None
         self.create_dataset(title, data, rgba)
         self.min_datapoints_on_screen = 2
@@ -48,19 +47,19 @@ class LineChart(Panel):
         self._x_axis_labels: list[str] = None
         self.index_change_event = None
         self.labels = []
+        self.num_vertical_gridlines = 0
 
     def set_data(self, title: str, data: list[float], rgba: RGBA):
         self.create_dataset(title, data, rgba)
         self.update()
 
-    def create_dataset(self, title: str, data: list[float], rgba: RGBA):
-        self.dataset = DataSet(title, data, rgba)
+    def create_dataset(self, title: str, data: list[float], rgba: RGBA, tag: str = ""):
+        self.dataset = DataSet(title, data, rgba, tag)
 
     def clear_datasets(self):
         self.dataset.clear()
         self.labels.clear()
-        title, data, rgba = self.initial_data
-        self.create_dataset(title, data, rgba)
+        self.create_dataset("", [0], RGBA(255, 255, 255, 0), "default")
         self.set_indexes(0, 1)
         self.recalc_min_and_max()
         self.update()
@@ -176,7 +175,6 @@ class LineChart(Panel):
         while self.num_datapoints_on_screen() < self.dataset.collection_length() - 1 and self.num_datapoints_on_screen() < self.max_datapoints_on_screen:
             self.zoom_out()
 
-
     @overrides
     def zoom_out(self):
         for i in range(self.zoom_rate()):
@@ -279,18 +277,25 @@ class LineChart(Panel):
         self.draw_horizontal_indicator_lines()
 
     def draw_x_axis_label(self, index: int, x: int, text: str):
-        self.painter.setPen(QPen(Qt.white, .01, Qt.SolidLine))
-        self.painter.setBrush(QBrush(StyleInfo.color_background, Qt.SolidPattern))
+        if self.draw_x_axis:
+            self.painter.setPen(QPen(Qt.white, .01, Qt.SolidLine))
+            self.painter.setBrush(QBrush(StyleInfo.color_background, Qt.SolidPattern))
 
-        w = 100
-        y = self.chart_height()
-        x = x - int(w / 2)
-        h = self.x_axis_height
-        self.painter.drawRect(x, y, w, h)
-        self.painter.drawText(QRectF(x, y, w, h), Qt.AlignHCenter | Qt.AlignCenter, text)
+            w = int(self.chart_width() / self.num_vertical_gridlines)
+            y = self.chart_height()
+            x = x - int(w / 2)
+            h = self.x_axis_height
+            self.painter.drawRect(x, y, w, h)
+            self.painter.drawText(QRectF(x, y, w, h), Qt.AlignHCenter | Qt.AlignCenter, text)
 
-    def add_collection(self, title: str, data: list[float], rgb: RGBA):
-        self.dataset.add_collection(title, data, rgb)
+    def reset_indexes(self):
+        self.first_index = 0
+        self.last_index = 1
+
+    def add_collection(self, title: str, data: list[float], rgb: RGBA, tag: str = ""):
+        if len(self.dataset.collections()) == 1 and self.dataset.collections()[0].tag == "default":
+            self.dataset.delete_collection("default")
+        self.dataset.add_collection(title, data, rgb, tag)
         self.recalc_min_and_max()
 
     def get_y_for_datapoint(self, item: float) -> int:
@@ -374,14 +379,16 @@ class LineChart(Panel):
 
     def draw_vertical_gridlines(self):
         if self._draw_gridlines:
-            for index in self.gridline_datapoints:
-                if self.first_index < index < self.last_index:
-                    x = self.get_x_for_index(index)
-                    self.painter.setPen(QPen(StyleInfo.color_grid_line, StyleInfo.gridline_width, Qt.SolidLine))
-                    self.painter.drawLine(x, 0, x, self.chart_height())
+            points = [index for index in self.gridline_datapoints if self.first_index < index < self.last_index]
+            self.num_vertical_gridlines = len(points)
+            for index in points:
+                x = self.get_x_for_index(index)
+                self.painter.setPen(QPen(StyleInfo.color_grid_line, StyleInfo.gridline_width, Qt.SolidLine))
+                self.painter.drawLine(x, 0, x, self.chart_height())
 
-                    # find x axis value
-                    self.painter.setPen(QPen(QColor(255, 255, 255), .05, Qt.SolidLine))
+                # find x axis value
+                self.painter.setPen(QPen(QColor(255, 255, 255), .05, Qt.SolidLine))
+                if self.draw_x_axis:
                     self.draw_x_axis_label(index, x, self.format_text_for_x_axis(index))
 
     def format_text_for_x_axis(self, index: int) -> str:
@@ -389,7 +396,7 @@ class LineChart(Panel):
             return self._x_axis_labels[index]
         return str(index)
 
-    def format_text_for_y_axis(self, text: float) -> str:
+    def format_text_for_y_axis(self, text: any) -> str:
         return str(text)  # override to change the format for the y axis labels
 
     def convert_y_to_value(self, y: float):
@@ -399,17 +406,18 @@ class LineChart(Panel):
             return 0
 
     def draw_y_axis_label(self, value: float, y: int, color: QColor):
-        self.painter.setPen(QPen(color, .01, Qt.SolidLine))
-        self.painter.setBrush(QBrush(StyleInfo.color_background, Qt.SolidPattern))
+        if self.draw_y_axis:
+            self.painter.setPen(QPen(color, .01, Qt.SolidLine))
+            self.painter.setBrush(QBrush(StyleInfo.color_background, Qt.SolidPattern))
 
-        h = 20
-        x = self.chart_width()
-        y = int(y - h / 2)
-        w = self.width() - self.chart_width()
-        self.painter.drawRect(x, y, w, h)
-        self.painter.drawText(QRectF(x, y, w, h),
-                              Qt.AlignHCenter | Qt.AlignCenter,
-                              self.format_text_for_y_axis(value))
+            h = 20
+            x = self.chart_width()
+            y = int(y - h / 2)
+            w = self.width() - self.chart_width()
+            self.painter.drawRect(x, y, w, h)
+            self.painter.drawText(QRectF(x, y, w, h),
+                                  Qt.AlignHCenter | Qt.AlignCenter,
+                                  self.format_text_for_y_axis(value))
 
     def draw_gridlines(self):
         self.draw_horizontal_gridlines()
@@ -439,7 +447,6 @@ class LineChart(Panel):
                 point = collection[index]
                 y_value = self.get_y_for_datapoint(point)
                 self.painter.setPen(QPen(collection.get_qcolor(), StyleInfo.pen_width, Qt.DashLine))
-                # self.painter.drawLine(x, y_value, self.chart_width(), y_value)
                 self.draw_y_axis_label(point, y_value, collection.get_qcolor())
 
                 price_str = self.format_text_for_y_axis(point)
@@ -457,7 +464,6 @@ class LineChart(Panel):
                 i += 1
 
     def draw_collections(self):
-
         collection: Collection
         collections = self.dataset.collections()
         for i in range(len(collections)):

@@ -4,8 +4,8 @@ import typing
 
 
 class DataSet:
-    def __init__(self, title: str, data: list[float], color: RGBA):
-        self.__data: typing.Dict[str, Collection] = {title: Collection(title, data, color)}
+    def __init__(self, title: str, data: list[float], color: RGBA, tag: str = ""):
+        self.data: typing.Dict[str, Collection] = {title: Collection(title, data, color, tag)}
         self.global_min = None
         self.global_max = None
         self.local_mins = {}
@@ -18,25 +18,34 @@ class DataSet:
         self.local_maxes = {}
 
     def clear(self):
-        self.__data = []
+        self.data = {}
 
-    def add_collection(self, title: str, data: list[float], rgba: RGBA):
-        self.__data[title] = Collection(title, data, rgba)
+    def add_collection(self, title: str, data: list[float], rgba: RGBA, tag: str = ""):
+        self.data[title] = Collection(title, data, rgba, tag)
         self.__reset_global_values()
 
+    def delete_collection(self, tag: str):
+        key_to_delete = None
+        for key in self.data.keys():
+            if self.data[key].tag == tag:
+                key_to_delete = key
+                break
+        if key_to_delete is not None:
+            self.data.pop(key_to_delete)
+
     def contains(self, title: str):
-        return title in self.__data
+        return title in self.data
 
     def collection_length(self):
-        if len(self.__data) == 0:
+        if len(self.data) == 0:
             return 0
-        return len(list(self.__data.values())[0])
+        return len(list(self.data.values())[0])
 
     def collections(self) -> list[Collection]:
-        return list(self.__data.values())
+        return list(self.data.values())
 
     def num_collections(self):
-        return len(self.__data)
+        return len(self.data)
 
     def min_value(self):
         if self.global_min:
@@ -57,6 +66,9 @@ class DataSet:
         return min_
 
     def min_value_between_indexes(self, start: int, end: int):
+        if start == end:
+            raise ValueError("start and end are equal")
+
         min_ = float("inf")
         if len(self.collections()) == 0 or len(self.collections()[0]) == 0:
             return min_

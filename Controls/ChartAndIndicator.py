@@ -16,13 +16,16 @@ class ChartAndIndicator(Panel):
         self.splitter = Splitter(LayoutDirection.VERTICAL)
         self.add_widget(self.splitter)
 
+        # event fired when submit is hit on timeframe panel, and new data is available.
+        self.data_change_event = None
+
         self.candles = []
-        self.__candle_chart: CandleChart = None
+        self.candle_chart: CandleChart = None
         self.timeframe_panel = TimeframePanel()
         self.timeframe_panel.submit_event = self.submit_event
         self.timeframe_panel.run_query()
 
-        self.splitter.addWidget(self.__candle_chart)
+        self.splitter.addWidget(self.candle_chart)
 
         self.x_axis_labels = []
         for can in self.candles:
@@ -40,19 +43,19 @@ class ChartAndIndicator(Panel):
 
         self.add_widget(self.timeframe_panel)
 
-        self.__candle_chart.resize(self.width(), int(self.height() * .75))
+        self.candle_chart.resize(self.width(), int(self.height() * .75))
         self.indicator_charts[0].resize(self.width(), int(self.height() * .25))
 
-        self.__candle_chart.set_draw_y_axis(True)
-        self.__candle_chart.index_change_event = lambda f, l: self.candle_chart_index_change_event(f, l)
-        self.__candle_chart.mouse_draw_event = lambda x, y ,c: self.candle_chart_mouse_draw_event(x, y, c)
+        self.candle_chart.set_draw_y_axis(True)
+        self.candle_chart.index_change_event = lambda f, l: self.candle_chart_index_change_event(f, l)
+        self.candle_chart.mouse_draw_event = lambda x, y, c: self.candle_chart_mouse_draw_event(x, y, c)
 
-        self.__candle_chart.zoom_out_max()
+        self.candle_chart.zoom_out_max()
 
     def submit_event(self, mom_data: pd.DataFrame):
         candles = []
         for row in mom_data.iloc:
-            date_time = str(row["name"])
+            date_time = str(row.name)
             open = row.Open
             high = row.High
             low = row.Low
@@ -63,10 +66,16 @@ class ChartAndIndicator(Panel):
             candles.append(candle)
 
         self.candles = candles
-        if self.__candle_chart is None:
-            self.__candle_chart = CandleChart(candles)
+        if self.candle_chart is None:
+            self.candle_chart = CandleChart(candles)
         else:
-            self.__candle_chart.set_data(candles)
+            self.candle_chart.set_data(candles)
+
+        if self.data_change_event:
+            self.data_change_event()
+
+        # todo: replace with logic that updates the indicators with the appropriate new data. someday...
+        self.clear_indicators()
 
     def clear_indicators(self):
         for i in range(len(self.indicator_charts)):
@@ -76,12 +85,12 @@ class ChartAndIndicator(Panel):
         self.indicator_charts.clear()
 
     def create_new_indicator_chart(self, title: str, data: list[float], rgba: RGBA):
-        if len(data) != self.__candle_chart.dataset.collection_length():
-            raise ValueError("Indicator must have a datapoint for every candle")
+        if len(data) != self.candle_chart.dataset.collection_length():
+            raise ValueError("Indicator must have a datapoint for every candle") # todo: remove initial_data, replace with remove indicators rather than initial data
         indicator_chart = IndicatorChart(title, data, rgba)
         indicator_chart.set_x_axis_labels(self.x_axis_labels)
         indicator_chart.set_draw_y_axis(True)
-        indicator_chart.set_indexes(self.__candle_chart.first_index, self.__candle_chart.last_index)
+        indicator_chart.set_indexes(self.candle_chart.first_index, self.candle_chart.last_index)
 
         indicator_chart.mouse_draw_event = lambda x, y, c: self.indicator_chart_mouse_draw_event(x, y, c)
         indicator_chart.index_change_event = lambda f, l: self.indicator_chart_index_change_event(f, l)
@@ -96,8 +105,8 @@ class ChartAndIndicator(Panel):
         indicator_chart.set_draw_x_axis(True)
 
     def indicator_chart_mouse_draw_event(self, x: int, y: int, caller: IndicatorChart):
-        self.__candle_chart.set_draw_vertical_cursor(True)
-        self.__candle_chart.set_mouse_x(x)
+        self.candle_chart.set_draw_vertical_cursor(True)
+        self.candle_chart.set_mouse_x(x)
         for chart in self.indicator_charts:
             if chart is not caller:
                 chart.set_draw_vertical_cursor(True)
@@ -109,7 +118,7 @@ class ChartAndIndicator(Panel):
             chart.set_mouse_x(x)
 
     def add_collection(self, title: str, data: list[float], rgba: RGBA):
-        self.__candle_chart.add_collection(title, data, rgba)
+        self.candle_chart.add_collection(title, data, rgba)
 
     def add_indicator(self, title: str, data: list[float], rgba: RGBA, index: int):
         if index < 0:
@@ -123,31 +132,31 @@ class ChartAndIndicator(Panel):
     def indicator_checked(self, indicator_name: str, checked: bool):
         match indicator_name:
             case "Bollinger Bands":
-                self.__candle_chart.bollinger_bands(20, 2)
+                self.candle_chart.bollinger_bands(20, 2)
                 return
 
     def clear_strategy(self):
         self.clear_indicators()
-        self.__candle_chart.clear_datasets()
-        self.__candle_chart.zoom_out_max()
+        self.candle_chart.clear_datasets()
+        self.candle_chart.zoom_out_max()
 
     def candle_chart_index_change_event(self, first_index, last_index):
         for indicator_chart in self.indicator_charts:
             indicator_chart.set_indexes(first_index, last_index)
 
     def indicator_chart_index_change_event(self, first_index, last_index):
-        self.__candle_chart.set_indexes(first_index, last_index)
+        self.candle_chart.set_indexes(first_index, last_index)
         for indicator_chart in self.indicator_charts:
             indicator_chart.set_indexes(first_index, last_index)
 
     def candle_chart(self):
-        return self.__candle_chart
+        return self.candle_chart
 
     def zoom_max(self):
-        self.__candle_chart.zoom_out_max()
+        self.candle_chart.zoom_out_max()
         for chart in self.indicator_charts:
             chart.update()
 
     def add_label(self, price: float, index: int, text: str, buy: bool):
-        self.__candle_chart.add_label(price, index, text, buy)
+        self.candle_chart.add_label(price, index, text, buy)
 

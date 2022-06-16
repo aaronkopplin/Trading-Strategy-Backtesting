@@ -38,7 +38,28 @@ class CandleChart(LineChart):
         self.candles = data
         self.create_dataset("", closes, RGBA(255, 255, 255,  0))
         self.set_x_axis_labels(labels)
+        self.set_indexes(0, 1)
+        self.zoom_out_max()
         self.update()
+
+    @overrides
+    def clear_datasets(self):
+        self.dataset.clear()
+        self.labels.clear()
+        closes = []
+        labels = []
+        for can in self.candles:
+            closes.append(can.close())
+            labels.append(can.date_time())
+        self.create_dataset("", closes, RGBA(255, 255, 255, 0))
+        self.set_x_axis_labels(labels)
+        self.set_indexes(0, 1)
+        self.zoom_out_max()
+        self.update()
+
+    @overrides
+    def format_text_for_x_axis(self, index: int) -> str:
+        return str(self._x_axis_labels[index]).replace("00:00:00", "").replace(" ", "")
 
     def bollinger_bands(self, length: int, stdev: int):
         lower_band, middle, upper_band = bollinger_bands(self.candles, length, stdev)
@@ -48,11 +69,17 @@ class CandleChart(LineChart):
 
     def min_candle_value_between_indexes(self):
         can: Candle
-        return min([can.low() for can in self.candles[self.first_index:self.last_index]])
+        if self.last_index > self.first_index:
+            return min([can.low() for can in self.candles[self.first_index:self.last_index]])
+        else:
+            return 0
 
     def max_candle_value_between_indexes(self):
         can: Candle
-        return max([can.high() for can in self.candles[self.first_index:self.last_index]])
+        if self.last_index > self.first_index:
+            return max([can.high() for can in self.candles[self.first_index:self.last_index]])
+        else:
+            return 0
 
     @overrides
     def recalc_min_and_max(self):
@@ -85,19 +112,20 @@ class CandleChart(LineChart):
 
         self.painter.drawRect(x, y, w, h)
 
-    def draw_candles(self):
-        for i in range(self.first_index, self.last_index ):
-            self.draw_candle(i)
+    @overrides
+    def format_text_for_y_axis(self, text: any) -> str:
+        return convert_price_to_str(text)
 
     @overrides
-    def format_text_for_y_axis(self, text: float) -> str:
-        return convert_price_to_str(text)
+    def draw_collections(self):
+        for i in range(self.first_index, self.last_index):
+            self.draw_candle(i)
+        super().draw_collections()
 
     @overrides
     def draw_objects(self):
         self.draw_horizontal_gridlines()
         self.draw_vertical_gridlines()
-        self.draw_candles()
         self.draw_collections()
         self.draw_labels()
         self.draw_mouse_cursor()

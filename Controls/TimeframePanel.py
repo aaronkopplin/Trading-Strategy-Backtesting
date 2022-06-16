@@ -10,6 +10,40 @@ from ta.utils import dropna
 from Controls.Panel import Panel
 from Controls.LayoutDirection import LayoutDirection
 from Controls.TextInputWithLabel import TextInputWithLabel
+from enum import Enum
+from datetime import datetime
+from datetime import timedelta
+from Controls.ComboBox import ComboBox
+
+
+class TimeInterval(Enum):
+    ONE_MIN = "1m"
+    TWO_MIN = "2m"
+    FIVE_MIN = "5m"
+    FIFTEEN_MIN = "15m"
+    THIRTY_MIN = "30m"
+    SIXTY_MIN = "60m"
+    NINETY_MIN = "90m"
+    ONE_HOUR = "1h"
+    ONE_DAY = "1d"
+    FIVE_DAY = "5d"
+    ONE_WK = "1wk"
+    ONE_MONTH = "1mo"
+    THREE_MONTH = "3mo"
+
+
+class Period(Enum):
+    ONE_DAY = "1d"
+    FIVE_DAYS = "5d"
+    ONE_MONTH = "1mo"
+    THREE_MONTH = "3mo"
+    SIX_MONTH = "6mo"
+    ONE_YEAR = "1y"
+    TWO_YEAR = "2y"
+    FIVE_YEAR = "5y"
+    TEN_YEAR = "10y"
+    YTD = "ytd"
+    MAX = "max"
 
 
 class TimeframePanel(Panel):
@@ -17,31 +51,43 @@ class TimeframePanel(Panel):
         super().__init__()
         self.set_layout(LayoutDirection.HORIZONTAL)
 
-        # begin time frame
-        # self.begin_timeframe = QDateTimeEdit()
-        # self.begin_timeframe.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
-        # self.begin_timeframe.setDateTime(QDateTime(date.today() - timedelta(7)))
-        # self.add_widget(self.begin_timeframe)
-        #
-        # # end time frame
-        # self.end_timeframe = QDateTimeEdit()
-        # self.end_timeframe.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
-        # self.end_timeframe.setDateTime(QDateTime(date.today()))
-        # self.add_widget(self.end_timeframe)
+        #  interval selector
+        self.interval_selector = ComboBox()
+        self.interval_selector.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
+        self.interval_selector.addItem(TimeInterval.ONE_MIN.value)
+        self.interval_selector.addItem(TimeInterval.TWO_MIN.value)
+        self.interval_selector.addItem(TimeInterval.FIVE_MIN.value)
+        self.interval_selector.addItem(TimeInterval.FIFTEEN_MIN.value)
+        self.interval_selector.addItem(TimeInterval.THIRTY_MIN.value)
+        self.interval_selector.addItem(TimeInterval.SIXTY_MIN.value)
+        self.interval_selector.addItem(TimeInterval.NINETY_MIN.value)
+        self.interval_selector.addItem(TimeInterval.ONE_HOUR.value)
+        self.interval_selector.addItem(TimeInterval.ONE_DAY.value)
+        self.interval_selector.addItem(TimeInterval.FIVE_DAY.value)
+        self.interval_selector.addItem(TimeInterval.ONE_WK.value)
+        self.interval_selector.addItem(TimeInterval.ONE_MONTH.value)
+        self.interval_selector.addItem(TimeInterval.THREE_MONTH.value)
+        self.interval_selector.setCurrentText(TimeInterval.ONE_DAY.value)
+        self.interval_selector.currentTextChanged.connect(self.selector_text_changed_event)
+        self.add_widget(self.interval_selector)
 
-        #  candle selector
-        self.candle_selector = QComboBox()
-        self.candle_selector.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
-        self.candle_selector.addItem("1m")
-        self.candle_selector.addItem("2m")
-        self.candle_selector.addItem("5m")
-        self.candle_selector.addItem("15m")
-        self.candle_selector.addItem("30m")
-        self.candle_selector.addItem("1h")
-        self.candle_selector.addItem("1d")
-        self.candle_selector.addItem("5d")
-        self.candle_selector.addItem("1wk")
-        self.add_widget(self.candle_selector)
+        # period selector
+        self.period_selector = ComboBox()
+        self.period_selector.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
+        self.period_selector.addItem(Period.ONE_DAY.value)
+        self.period_selector.addItem(Period.FIVE_DAYS.value)
+        self.period_selector.addItem(Period.ONE_MONTH.value)
+        self.period_selector.addItem(Period.THREE_MONTH.value)
+        self.period_selector.addItem(Period.SIX_MONTH.value)
+        self.period_selector.addItem(Period.ONE_YEAR.value)
+        self.period_selector.addItem(Period.TWO_YEAR.value)
+        self.period_selector.addItem(Period.FIVE_YEAR.value)
+        self.period_selector.addItem(Period.TEN_YEAR.value)
+        self.period_selector.addItem(Period.YTD.value)
+        self.period_selector.addItem(Period.MAX.value)
+        self.period_selector.setCurrentText(Period.TWO_YEAR.value)
+        self.period_selector.currentTextChanged.connect(self.selector_text_changed_event)
+        self.add_widget(self.period_selector)
 
         # ticker symbol
         self.ticker_symbol_edit: TextInputWithLabel = TextInputWithLabel("TICKER: ")
@@ -56,37 +102,33 @@ class TimeframePanel(Panel):
         self.submit_button.clicked.connect(self.run_query)
         self.add_widget(self.submit_button)
 
-        # self.load_parameters()
-
         self.submit_event = None
         self.ticker_symbol = ""
 
+    def period_invalid(self):
+        return (self.interval_selector.currentText() == TimeInterval.ONE_MIN.value or
+                self.interval_selector.currentText() == TimeInterval.TWO_MIN.value or
+                self.interval_selector.currentText() == TimeInterval.FIVE_MIN.value or
+                self.interval_selector.currentText() == TimeInterval.FIFTEEN_MIN.value or
+                self.interval_selector.currentText() == TimeInterval.THIRTY_MIN.value or
+                self.interval_selector.currentText() == TimeInterval.SIXTY_MIN.value or
+                self.interval_selector.currentText() == TimeInterval.NINETY_MIN.value or
+                self.interval_selector.currentText() == TimeInterval.ONE_HOUR.value) and not \
+                (self.period_selector.currentText() == Period.ONE_DAY.value or
+                 self.period_selector.currentText() == Period.FIVE_DAYS.value or
+                 self.period_selector.currentText() == Period.ONE_MONTH.value)
+
+    def selector_text_changed_event(self):
+        self.submit_button.setEnabled(not self.period_invalid())
+
     def run_query(self):
-        interval = self.candle_selector.currentText()
+        interval = self.interval_selector.currentText()
         ticker = self.ticker_symbol_edit.get_text()
+        period = self.period_selector.currentText()
 
         tick = yf.Ticker(str(ticker))
-        hist_data = tick.history(period="max",
-                                 interval=interval)  # Tells yfinance what kind of data we want about this stock.
-        hist_data.head()  # Observe the historical stock data
+        hist_data = tick.history(period=period, interval=interval)
         mom_data = add_all_ta_features(hist_data, open="Open", high="High", low="Low", close="Close", volume="Volume")
+
         if self.submit_event is not None:
             self.submit_event(mom_data)
-
-    # def load_parameters(self):
-    #     data = []
-    #     with open("./Data/last_query.csv") as file:
-    #         reader = csv.reader(file)
-    #         for row in reader:
-    #             data.append(row)
-    #     parameters = data.pop()
-    #     ticker = parameters[0]
-    #     begin = parameters[1]
-    #     end = parameters[2]
-    #     interval = parameters[3]
-    #
-    #     self.ticker_symbol_edit.set_text(ticker)
-    #     self.ticker_symbol = ticker
-    #     self.begin_timeframe.setDateTime(datetime.strptime(begin, "%Y-%m-%d"))
-    #     self.end_timeframe.setDateTime(datetime.strptime(end, "%Y-%m-%d"))
-    #     self.candle_selector.setCurrentText(interval)

@@ -10,5 +10,5 @@ class OutputChart(LineChart):
         super().__init__(title, data, rgba)
 
     @overrides
-    def format_text_for_y_axis(self, text: float) -> str:
+    def format_text_for_y_axis(self, text: any) -> str:
         return format_as_two_decimal_price(text)

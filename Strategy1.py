@@ -51,7 +51,7 @@ class Strategy1(Strategy):
                     self.sell_all_open_positions()
 
     @overrides
-    def _after_strategy(self):
+    def after_strategy(self):
         self.add_plot_value("LOWER", self.lower_band)
         self.add_plot_value("MIDDLE", self.middle_band)
         self.add_plot_value("UPPER", self.upper_band)

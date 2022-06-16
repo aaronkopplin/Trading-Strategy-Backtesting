@@ -18,11 +18,10 @@ from Utilities.TextUtilities import format_as_two_decimal_price
 
 class Strategy:
     def __init__(self):
-
         # private vars
-        self.__account: Account = None
-        self.__chart: ChartAndIndicator = None
-        self.__performance_chart: LineChart = None
+        self.account: Account = None
+        self.chart: ChartAndIndicator = None
+        self.performance_chart: LineChart = None
         self.__statistics: StatisticsTable = None
 
         # public vars
@@ -38,21 +37,21 @@ class Strategy:
 
     # public members
     def set_performance_chart(self, chart: LineChart):
-        self.__performance_chart = chart
+        self.performance_chart = chart
 
     def set_statistics_table(self, table: StatisticsTable):
         self.__statistics = table
 
     def set_chart(self, chart: ChartAndIndicator):
-        self.__chart = chart
+        self.chart = chart
 
     def set_candles(self, candles: list[Candle]):
         self.candles = candles
         self.indicators = Indicators(self.candles)
 
     def run(self):
-        self.__account.store_account_value(self.candles[0].close())
-        self.__chart.clear_strategy()
+        self.account.store_account_value(self.candles[0].close())
+        self.chart.clear_strategy()
 
         self._before_strategy()
         for i in range(len(self.candles)):
@@ -62,13 +61,13 @@ class Strategy:
                 self.prev_candle = self.candles[i - 1]
                 self.prev_index = i - 1
             self._next_candle()
-            self.__account.store_account_value(self.curr_candle.close())
+            self.account.store_account_value(self.curr_candle.close())
 
-        self._after_strategy()
-        self.__plot_values_on_chart()
-        self.__plot_indicators()
-        self.__chart.zoom_max()
-        account_values = self.__account.get_account_values()
+        self.after_strategy()
+        self.plot_values_on_chart()
+        self.plot_indicators()
+        self.chart.zoom_max()
+        account_values = self.account.get_account_values()
         self.__plot_performance("PERFORMANCE",
                                 account_values,
                                 RGBA(255, 255, 255, 255))
@@ -99,7 +98,7 @@ class Strategy:
         pass
 
     # override in child classes
-    def _after_strategy(self):
+    def after_strategy(self):
         pass
 
     # protected members
@@ -107,7 +106,7 @@ class Strategy:
         self.name = name
 
     def _set_account_bal(self, bal: float):
-        self.__account = Account(bal)
+        self.account = Account(bal)
 
     def plot(self, title: str, data: float, rgba: RGBA):
         if self.plot_values.get(title) is None:
@@ -121,54 +120,56 @@ class Strategy:
 
         if percent < 0 or percent > 100:
             raise ValueError("Percent cannot be less than zero or greater than 100")
-        return (self.__account.usd_balance * percent) / price
+        return (self.account.usd_balance * percent) / price
 
     def _buy_amount(self, amount: float, price: float = None):
         if price is None:
             price = self.curr_candle.close()
-        success = self.__account.buy(price, amount, self.curr_index)
+        success = self.account.buy(price, amount, self.curr_index)
 
     def buy_percent(self, percent: float, price: float = None):
         if price is None:
             price = self.curr_candle.close()
-        cash = percent * self.__account.usd_balance
+        cash = percent * self.account.usd_balance
         self.buy(price, cash, self.curr_index)
 
     def buy(self, price: float, cash: float, index: int):
-        success = self.__account.buy(price, cash, index)
+        success = self.account.buy(price, cash, index)
         if success:
-            self.__chart.add_label(price, index, "BUY", True)
+            self.chart.add_label(price, index, "BUY", True)
 
     def sell_all_open_positions(self, price: float = None):
         if price is None:
             price = self.curr_candle.close()
-        success = self.__account.sell_all_open_positions(price, self.curr_index)
+        success = self.account.sell_all_open_positions(price, self.curr_index)
         if success:
-            self.__chart.add_label(price, self.curr_index, "SELL", False)
+            self.chart.add_label(price, self.curr_index, "SELL", False)
 
     # private members
-    def __plot_values_on_chart(self):
+    def plot_values_on_chart(self):
         for collection in self.plot_values.values():
-            self.__chart.add_collection(collection.title, collection, collection.color)
+            self.chart.add_collection(collection.title, collection, collection.color)
 
-    def __plot_indicators(self):
+    def plot_indicators(self):
         for i in range(len(self.plot_indicator_values)):
             item = self.plot_indicator_values[i]
             for val in item.values():
-                self.__chart.add_indicator(val.title, val, val.color, i)
+                self.chart.add_indicator(val.title, val, val.color, i)
 
     def __plot_performance(self, title: str, data: list[float], rgba: RGBA):
-        self.__performance_chart.add_collection(title, data, rgba)
-        self.__performance_chart.zoom_out_max()
+        self.performance_chart.clear_datasets()
+        self.performance_chart.add_collection(title, data, rgba)
+        self.performance_chart.reset_indexes()
+        self.performance_chart.zoom_out_max()
 
     def net_profit(self):
-        return round(sum(self.__account.profits), 2)
+        return round(sum(self.account.profits), 2)
 
     def winning_trades(self) -> list[Trade]:
-        return [trade for trade in self.__account.trades if trade.profit >= 0]
+        return [trade for trade in self.account.trades if trade.profit >= 0]
 
     def losing_trades(self) -> list[Trade]:
-        return [trade for trade in self.__account.trades if trade.profit < 0]
+        return [trade for trade in self.account.trades if trade.profit < 0]
 
     def total_profits(self) -> float:
         winning = self.winning_trades()
@@ -187,26 +188,27 @@ class Strategy:
         return round(self.total_losses() / len(self.losing_trades()), 2)
 
     def portfolio_max_value(self):
-        values = self.__account.get_account_values()
+        values = self.account.get_account_values()
         return max(values)
 
     def portfolio_min_value(self):
-        values = self.__account.get_account_values()
+        values = self.account.get_account_values()
         return min(values)
 
     def portfolio_value(self):
-        values = self.__account.get_account_values()
+        values = self.account.get_account_values()
         if len(values) > 0:
             return values[-1]
-        return self.__account.usd_balance
+        return self.account.usd_balance
 
     def print_statistics(self):
         if self.__statistics:
             self.__statistics.set_column_headers("Statistic", "Output")
+            self.__statistics.remove_all_rows()
             self.__statistics.add_row("Net Profits", format_as_two_decimal_price(self.net_profit()))
             self.__statistics.add_row("Total Profit", format_as_two_decimal_price(self.total_profits()))
             self.__statistics.add_row("Total Losses", format_as_two_decimal_price(self.total_losses()))
-            self.__statistics.add_row("Num Buys", len(self.__account.trades))
+            self.__statistics.add_row("Num Buys", len(self.account.trades))
             self.__statistics.add_row("Winning Trades", len(self.winning_trades()))
             self.__statistics.add_row("Average Win", format_as_two_decimal_price(self.average_win()))
             self.__statistics.add_row("Losing Trades", len(self.losing_trades()))
