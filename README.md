@@ -1,5 +1,5 @@
-# Trading-Bot
-python trading bot
+# Trading Strategy Backtesting
+![image](https://user-images.githubusercontent.com/48528737/173469154-ba025e27-c1e4-425d-990f-506a4ae2c3f0.png)
 
 This program allows you to plot stock or crypto data, create your own technical indicators, and backtest trading strategies
 
@@ -9,11 +9,17 @@ Run your strategy with Ctrl + R
 
 The rest should be pretty self explanatory.
 
-DEPENDENCIES: 
+# Running the program
+~ install the dependencies ~   
+cd C:\path\to\directory  
+`python Bot.py`
 
-PyQt5: https://pypi.org/project/PyQt5/. pip install PyQt5
+# Dependencies: 
 
-yfinance: https://pypi.org/project/yfinance/.  pip install yfinance
+PyQt5: https://pypi.org/project/PyQt5/. `pip install PyQt5`
 
-Overrides: https://pypi.org/project/overrides/.  pip install overrides
+yfinance: https://pypi.org/project/yfinance/.  `pip install yfinance`
 
+Overrides: https://pypi.org/project/overrides/.  `pip install overrides`
+
+ta: https://github.com/bukosabino/ta.  `pip install --upgrade ta`
